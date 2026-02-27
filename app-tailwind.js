@@ -104,14 +104,20 @@ class Router {
     window.addEventListener('popstate', () => {
       const path = window.location.pathname;
       if (this.routes[path]) {
+        this.currentRoute = path;
         this.routes[path]();
       } else {
         this.navigate('/');
       }
     });
     
-    const path = window.location.pathname;
+    // Handle initial route
+    const path = window.location.pathname === '/' || window.location.pathname === '/index.html' 
+      ? '/' 
+      : window.location.pathname;
+    
     if (this.routes[path]) {
+      this.currentRoute = path;
       this.routes[path]();
     } else {
       this.navigate('/');
@@ -215,11 +221,21 @@ async function startScanner() {
       </div>
     `;
     
-    stream = await navigator.mediaDevices.getUserMedia({ 
-      video: { facingMode: 'environment' } 
-    });
+    // iOS Safari compatibility: request with constraints
+    const constraints = {
+      video: {
+        facingMode: 'environment',
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    };
+    
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
     
     video.srcObject = stream;
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('webkit-playsinline', 'true');
+    await video.play();
     scannerActive = true;
     messageArea.innerHTML = '';
     
