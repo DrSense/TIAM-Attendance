@@ -451,11 +451,18 @@ async function renderDashboard() {
   });
   
   const attendance = await DB.getAttendance();
-  document.getElementById('tableContainer').innerHTML = renderTable(attendance);
+  const tableContainer = document.getElementById('tableContainer');
+  if (tableContainer) {
+    tableContainer.innerHTML = renderTable(attendance);
+  }
   
-  document.getElementById('searchBar').addEventListener('input', () => filterTable(attendance));
-  document.getElementById('filterDropdown').addEventListener('change', () => filterTable(attendance));
-  document.getElementById('exportBtn').addEventListener('click', () => exportCSV(attendance));
+  const searchBar = document.getElementById('searchBar');
+  const filterDropdown = document.getElementById('filterDropdown');
+  const exportBtn = document.getElementById('exportBtn');
+  
+  if (searchBar) searchBar.addEventListener('input', () => filterTable(attendance));
+  if (filterDropdown) filterDropdown.addEventListener('change', () => filterTable(attendance));
+  if (exportBtn) exportBtn.addEventListener('click', () => exportCSV(attendance));
 }
 
 function renderTableWithLoading() {
