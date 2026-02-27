@@ -4,5 +4,3 @@ node_modules/
 .env
 dist/
 .cache/
-firebase-config.js
-styles-compiled.css
