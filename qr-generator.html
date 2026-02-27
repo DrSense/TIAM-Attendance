@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator - TIAM Attendance</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #F4F6F8;
+    }
+    h1 {
+      color: #2A6F97;
+      text-align: center;
+    }
+    .info {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .qr-card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .qr-card h3 {
+      color: #2A6F97;
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+    .qr-card p {
+      color: #666;
+      font-size: 14px;
+      margin: 4px 0;
+    }
+    canvas {
+      margin: 12px 0;
+      border: 2px solid #2A6F97;
+      border-radius: 8px;
+    }
+    .print-btn {
+      background: #2A6F97;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: block;
+      margin: 24px auto;
+    }
+    .print-btn:hover {
+      opacity: 0.9;
+    }
+    @media print {
+      body {
+        background: white;
+      }
+      .info, .print-btn {
+        display: none;
+      }
+      .qr-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>TIAM Attendance - QR Codes</h1>
+  
+  <div class="info">
+    <p><strong>Instructions:</strong></p>
+    <ul>
+      <li>These QR codes can be printed and attached to child badges</li>
+      <li>Each code contains the child's unique ID</li>
+      <li>Scan these codes using the TIAM Attendance app</li>
+      <li>Click "Print All Codes" to print badges</li>
+    </ul>
+  </div>
+  
+  <button class="print-btn" onclick="window.print()">Print All Codes</button>
+  
+  <div class="qr-grid" id="qrGrid"></div>
+  
+  <script>
+    const children = [
+      { id: 'C001', name: 'Emma Johnson', home: 'Springfield' },
+      { id: 'C002', name: 'Noah Williams', home: 'Riverside' },
+      { id: 'C003', name: 'Olivia Brown', home: 'Lakeside' },
+      { id: 'C004', name: 'Liam Davis', home: 'Springfield' },
+      { id: 'C005', name: 'Ava Martinez', home: 'Hillview' }
+    ];
+    
+    // Simple QR Code generator
+    function generateQR(text, canvas) {
+      const ctx = canvas.getContext('2d');
+      const size = 160;
+      const moduleSize = 8;
+      const modules = size / moduleSize;
+      
+      canvas.width = size;
+      canvas.height = size;
+      
+      // Simple pattern based on text (not a real QR code, just for demo)
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, size, size);
+      
+      ctx.fillStyle = 'black';
+      
+      // Create a pseudo-random pattern based on the text
+      let seed = 0;
+      for (let i = 0; i < text.length; i++) {
+        seed += text.charCodeAt(i);
+      }
+      
+      function random() {
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+      }
+      
+      // Draw pattern
+      for (let y = 0; y < modules; y++) {
+        for (let x = 0; x < modules; x++) {
+          if (random() > 0.5) {
+            ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+          }
+        }
+      }
+      
+      // Draw finder patterns (corners)
+      function drawFinder(x, y) {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(x, y, moduleSize * 7, moduleSize * 7);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(x + moduleSize, y + moduleSize, moduleSize * 5, moduleSize * 5);
+        ctx.fillStyle = 'black';
+        ctx.fillRect(x + moduleSize * 2, y + moduleSize * 2, moduleSize * 3, moduleSize * 3);
+      }
+      
+      drawFinder(0, 0);
+      drawFinder(size - moduleSize * 7, 0);
+      drawFinder(0, size - moduleSize * 7);
+      
+      // Add text in center
+      ctx.fillStyle = 'white';
+      ctx.fillRect(size/2 - 30, size/2 - 12, 60, 24);
+      ctx.fillStyle = 'black';
+      ctx.font = 'bold 16px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, size/2, size/2);
+    }
+    
+    // Generate QR codes for all children
+    const grid = document.getElementById('qrGrid');
+    
+    children.forEach(child => {
+      const card = document.createElement('div');
+      card.className = 'qr-card';
+      
+      const canvas = document.createElement('canvas');
+      generateQR(child.id, canvas);
+      
+      card.innerHTML = `
+        <h3>${child.name}</h3>
+        <p><strong>ID:</strong> ${child.id}</p>
+        <p><strong>Home:</strong> ${child.home}</p>
+      `;
+      
+      card.insertBefore(canvas, card.children[1]);
+      grid.appendChild(card);
+    });
+  </script>
+  
+  <div class="info" style="margin-top: 40px;">
+    <p><strong>Note:</strong> For production use, generate real QR codes using a proper library like qrcode.js or a backend service. These are simplified demo codes for testing the scanner interface.</p>
+    <p>To use real QR codes, install a QR library:</p>
+    <pre style="background: #f5f5f5; padding: 12px; border-radius: 8px; overflow-x: auto;">npm install qrcode
+# or use online generators like qr-code-generator.com</pre>
+  </div>
+</body>
+</html>

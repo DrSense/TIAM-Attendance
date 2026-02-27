@@ -1,0 +1,17 @@
+{
+  "name": "tiam-attendance",
+  "version": "1.0.0",
+  "description": "Church event attendance tracking PWA",
+  "scripts": {
+    "dev": "npx serve -l 8000",
+    "start": "npm run build:css && npx serve -l 8000",
+    "build:css": "npx tailwindcss -i styles-src.css -o styles-compiled.css --minify",
+    "watch:css": "npx tailwindcss -i styles-src.css -o styles-compiled.css --watch"
+  },
+  "keywords": ["pwa", "attendance", "church", "qr-scanner"],
+  "author": "TIAM",
+  "license": "MIT",
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
