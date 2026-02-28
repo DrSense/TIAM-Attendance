@@ -134,16 +134,13 @@ function renderHome() {
   app_element.innerHTML = `
     <div class="min-h-screen flex items-center justify-center p-4">
       <div class="w-full max-w-md">
-        <div class="flex justify-center mb-6">
-          <div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-xl p-3">
+        <div class="flex justify-center mb-8">
+          <div class="w-32 h-32 bg-white rounded-3xl flex items-center justify-center shadow-xl p-4">
             <img src="Logo.png" alt="TIAM Logo" class="w-full h-full object-contain">
           </div>
         </div>
         
         <h1 class="text-4xl font-bold text-center text-navy mb-2">TIAM Attendance</h1>
-        <div class="w-16 h-16 mx-auto mb-2 opacity-0 transition-opacity duration-300" id="logoLoader">
-          <img src="Logo.png" alt="" class="w-full h-full object-contain" onload="this.parentElement.style.opacity='1'" onerror="this.parentElement.remove()">
-        </div>
         <p class="text-xl text-center text-gray-600 mb-12">VBS 2026</p>
         
         <div class="space-y-4">
