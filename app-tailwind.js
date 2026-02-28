@@ -16,7 +16,8 @@ const icons = {
   download: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
   search: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
   alertCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
-  loader: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>'
+  loader: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>',
+  inbox: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>'
 };
 
 // Database
@@ -140,6 +141,9 @@ function renderHome() {
         </div>
         
         <h1 class="text-4xl font-bold text-center text-navy mb-2">TIAM Attendance</h1>
+        <div class="w-16 h-16 mx-auto mb-2 opacity-0 transition-opacity duration-300" id="logoLoader">
+          <img src="Logo.png" alt="" class="w-full h-full object-contain" onload="this.parentElement.style.opacity='1'" onerror="this.parentElement.remove()">
+        </div>
         <p class="text-xl text-center text-gray-600 mb-12">VBS 2026</p>
         
         <div class="space-y-4">
@@ -175,17 +179,16 @@ let scannerActive = false;
 function renderScanner() {
   app_element.innerHTML = `
     <div class="min-h-screen bg-warm-bg">
-      <div class="bg-navy text-white px-4 py-5 flex items-center justify-between sticky top-0 z-50 shadow-lg" style="height: 64px;">
-        <button id="backBtn" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+      <div class="bg-navy text-white px-4 py-4 flex items-center sticky top-0 z-50 shadow-lg">
+        <button id="backBtn" class="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
           ${icons.arrowLeft}
           <span class="font-semibold">Back</span>
         </button>
-        <h1 class="text-xl font-semibold">TIAM Attendance</h1>
-        <div class="w-16"></div>
+        <h1 class="text-lg sm:text-xl font-semibold flex-1 text-center px-2 truncate">Scanner</h1>
+        <div class="w-16 flex-shrink-0"></div>
       </div>
       
       <div class="max-w-md mx-auto p-4">
-        <p class="text-center text-lg font-semibold text-navy mb-6 mt-4">Scan Child QR Badge</p>
         
         <div class="bg-white rounded-2xl p-4 shadow-lg">
           <div class="relative aspect-square rounded-xl overflow-hidden border-2 border-gold bg-black shadow-md">
@@ -409,13 +412,13 @@ async function recordAttendance(childId, status) {
 async function renderDashboard() {
   app_element.innerHTML = `
     <div class="min-h-screen bg-warm-bg">
-      <div class="bg-navy text-white px-4 py-5 flex items-center justify-between sticky top-0 z-50 shadow-lg" style="height: 64px;">
-        <button id="backBtn" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+      <div class="bg-navy text-white px-4 py-4 flex items-center sticky top-0 z-50 shadow-lg">
+        <button id="backBtn" class="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
           ${icons.arrowLeft}
           <span class="font-semibold">Back</span>
         </button>
-        <h1 class="text-xl font-semibold">Attendance Dashboard</h1>
-        <div class="w-16"></div>
+        <h1 class="text-lg sm:text-xl font-semibold flex-1 text-center px-2 truncate">Dashboard</h1>
+        <div class="w-16 flex-shrink-0"></div>
       </div>
       
       <div class="max-w-4xl mx-auto p-4">
@@ -479,36 +482,44 @@ function renderTable(records) {
   if (records.length === 0) {
     return `
       <div class="bg-white rounded-2xl p-12 text-center shadow-sm">
-        <p class="text-gray-500 text-lg">No attendance recorded yet.</p>
-        <p class="text-gray-400 text-sm mt-2">Start scanning to log entries.</p>
+        <div class="flex justify-center mb-4 text-gray-300">
+          ${icons.inbox}
+        </div>
+        <p class="text-gray-500 text-lg font-medium">No attendance recorded yet</p>
+        <p class="text-gray-400 text-sm mt-2">Start scanning to log entries</p>
       </div>
     `;
   }
   
-  const rows = records.map(record => {
+  const cards = records.map(record => {
     const time = new Date(record.time).toLocaleTimeString('en-US', { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
     const statusColor = record.status === 'checked-in' ? 'bg-gold' : 'bg-navy';
+    const statusText = record.status === 'checked-in' ? 'Checked In' : 'Checked Out';
     
     return `
-      <tr class="border-b border-gray-100 hover:bg-gold/5 transition-colors">
-        <td class="px-4 py-3 font-medium text-navy">${record.name}</td>
-        <td class="px-4 py-3 text-gray-600">${record.id}</td>
-        <td class="px-4 py-3 text-gray-600">${record.home}</td>
-        <td class="px-4 py-3">
-          <span class="inline-flex items-center gap-2">
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-navy text-lg truncate">${record.name}</h3>
+            <p class="text-sm text-gray-500 mt-0.5">${record.id}</p>
+          </div>
+          <span class="inline-flex items-center gap-2 ml-3 flex-shrink-0">
             <span class="w-2 h-2 rounded-full ${statusColor}"></span>
-            <span class="text-sm text-gray-700">${record.status}</span>
+            <span class="text-sm font-medium text-gray-700">${statusText}</span>
           </span>
-        </td>
-        <td class="px-4 py-3 text-gray-600 text-sm">${time}</td>
-      </tr>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-600">${record.home}</span>
+          <span class="text-gray-500">${time}</span>
+        </div>
+      </div>
     `;
   }).join('');
   
-  return `
+  const desktopTable = `
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
@@ -522,11 +533,38 @@ function renderTable(records) {
             </tr>
           </thead>
           <tbody>
-            ${rows}
+            ${records.map(record => {
+              const time = new Date(record.time).toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              });
+              const statusColor = record.status === 'checked-in' ? 'bg-gold' : 'bg-navy';
+              const statusText = record.status === 'checked-in' ? 'Checked In' : 'Checked Out';
+              
+              return `
+                <tr class="border-b border-gray-100 hover:bg-gold/5 transition-colors">
+                  <td class="px-4 py-3 font-medium text-navy">${record.name}</td>
+                  <td class="px-4 py-3 text-gray-600">${record.id}</td>
+                  <td class="px-4 py-3 text-gray-600">${record.home}</td>
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full ${statusColor}"></span>
+                      <span class="text-sm text-gray-700">${statusText}</span>
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-gray-600 text-sm">${time}</td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
         </table>
       </div>
     </div>
+  `;
+  
+  return `
+    <div class="hidden md:block">${desktopTable}</div>
+    <div class="md:hidden space-y-3">${cards}</div>
   `;
 }
 
@@ -631,7 +669,7 @@ function showInstallPrompt() {
     });
     
     document.getElementById('notNowBtn').addEventListener('click', closeInstallPrompt);
-  }, 1000);
+  }, 3000);
 }
 
 function closeInstallPrompt() {
