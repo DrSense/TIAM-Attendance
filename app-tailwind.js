@@ -135,7 +135,7 @@ function renderHome() {
     <div class="min-h-screen flex items-center justify-center p-4">
       <div class="w-full max-w-md">
         <div class="flex justify-center mb-8">
-          <div class="w-32 h-32 bg-white rounded-3xl flex items-center justify-center shadow-xl p-4">
+          <div class="w-18 h-18 bg-white rounded-xl flex items-center justify-center shadow-lg p-3">
             <img src="Logo.png" alt="TIAM Logo" class="w-full h-full object-contain">
           </div>
         </div>
