@@ -170,6 +170,7 @@ function renderHome() {
 // Scanner Screen
 let stream = null;
 let scannerActive = false;
+let lastScannedId = null;
 
 function renderScanner() {
   app_element.innerHTML = `
@@ -265,10 +266,14 @@ function stopScanner() {
 function simulateScan() {
   if (!scannerActive) return;
   
-  // Always scan QR001 for demo purposes
-  const demoId = 'QR001';
+  // Prompt user to enter QR code ID
+  const qrId = prompt('Enter QR code (e.g., QR001, QR002):');
+  if (!qrId) return;
   
-  handleScan(demoId);
+  const formattedId = qrId.toUpperCase().trim();
+  lastScannedId = formattedId;
+  
+  handleScan(formattedId);
 }
 
 async function handleScan(childId) {
@@ -289,6 +294,8 @@ async function handleScan(childId) {
       video.classList.add('animate-flash-green');
       setTimeout(() => video.classList.remove('animate-flash-green'), 500);
     }
+    
+    lastScannedId = childId;
     
     resultPanel.innerHTML = `
       <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-100 animate-slide-up">
@@ -333,6 +340,9 @@ async function handleScan(childId) {
             Cancel
           </button>
         </div>
+        <button id="refreshScannerBtn" class="w-full h-10 mt-3 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-all">
+          ↻ Ready for Next Scan
+        </button>
       </div>
     `;
     
@@ -376,6 +386,14 @@ async function handleScan(childId) {
     document.getElementById('cancelRegisterBtn').addEventListener('click', () => {
       resultPanel.classList.add('hidden');
       resultPanel.innerHTML = '';
+      lastScannedId = null;
+    });
+    
+    document.getElementById('refreshScannerBtn').addEventListener('click', () => {
+      resultPanel.classList.add('hidden');
+      resultPanel.innerHTML = '';
+      messageArea.innerHTML = '';
+      lastScannedId = null;
     });
     
     return;
@@ -403,6 +421,8 @@ async function handleScan(childId) {
     video.classList.add('animate-flash-green');
     setTimeout(() => video.classList.remove('animate-flash-green'), 500);
   }
+  
+  lastScannedId = childId;
   
   resultPanel.innerHTML = `
     <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-100 animate-slide-up">
@@ -437,6 +457,9 @@ async function handleScan(childId) {
           Check-out
         </button>
       </div>
+      <button id="refreshScannerBtn2" class="w-full h-10 mt-3 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-all">
+        ↻ Ready for Next Scan
+      </button>
     </div>
   `;
   
@@ -448,6 +471,13 @@ async function handleScan(childId) {
   
   document.getElementById('checkoutBtn').addEventListener('click', () => {
     recordAttendance(childId, 'checked-out');
+  });
+  
+  document.getElementById('refreshScannerBtn2').addEventListener('click', () => {
+    resultPanel.classList.add('hidden');
+    resultPanel.innerHTML = '';
+    messageArea.innerHTML = '';
+    lastScannedId = null;
   });
 }
 
@@ -486,6 +516,7 @@ async function recordAttendance(childId, status) {
     setTimeout(() => {
       messageArea.innerHTML = '';
       resultPanel.innerHTML = '';
+      lastScannedId = null;
     }, 2000);
   } else {
     messageArea.innerHTML = `
