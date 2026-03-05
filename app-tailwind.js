@@ -44,13 +44,17 @@ const DB = {
       const child = this.getChild(childId);
       if (!child) return false;
       
+      const now = new Date();
       const record = {
         id: childId,
         name: child.name,
+        age: child.age || null,
+        sex: child.sex || null,
         home: child.home,
         status,
-        time: new Date().toISOString(),
-        timestamp: Date.now()
+        time: now.toISOString(),
+        timestamp: now.getTime(),
+        checkInTime: status === 'checked-in' ? now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : null
       };
       
       await addDoc(collection(db, 'attendance'), record);
@@ -170,13 +174,13 @@ let scannerActive = false;
 function renderScanner() {
   app_element.innerHTML = `
     <div class="min-h-screen bg-warm-bg">
-      <div class="bg-navy text-white px-4 py-4 flex items-center sticky top-0 z-50 shadow-lg">
-        <button id="backBtn" class="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
+      <div class="bg-navy text-white px-3 py-3 flex items-center sticky top-0 z-50 shadow-lg">
+        <button id="backBtn" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity flex-shrink-0 min-w-0">
           ${icons.arrowLeft}
-          <span class="font-semibold">Back</span>
+          <span class="font-semibold text-sm sm:text-base">Back</span>
         </button>
-        <h1 class="text-lg sm:text-xl font-semibold flex-1 text-center px-2 truncate">Scanner</h1>
-        <div class="w-16 flex-shrink-0"></div>
+        <h1 class="text-base sm:text-xl font-semibold flex-1 text-center px-2 truncate">Scanner</h1>
+        <div class="w-14 sm:w-16 flex-shrink-0"></div>
       </div>
       
       <div class="max-w-md mx-auto p-4">
@@ -282,29 +286,44 @@ async function handleScan(childId) {
     }
     
     resultPanel.innerHTML = `
-      <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 animate-slide-up">
-        <h3 class="text-lg font-semibold text-navy mb-4">New QR Code: ${childId}</h3>
-        <p class="text-sm text-gray-600 mb-4">Enter child information:</p>
+      <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-100 animate-slide-up">
+        <h3 class="text-base sm:text-lg font-semibold text-navy mb-3">New: ${childId}</h3>
+        <p class="text-xs sm:text-sm text-gray-600 mb-3">Enter child information:</p>
         
-        <div class="space-y-3">
+        <div class="space-y-2.5">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Child Name</label>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Name</label>
             <input type="text" id="childName" placeholder="Emma Johnson" 
-              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
+              class="w-full px-3 py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Age</label>
+              <input type="number" id="childAge" placeholder="8" min="1" max="18"
+                class="w-full px-3 py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Sex</label>
+              <select id="childSex" class="w-full px-3 py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Home/Church</label>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Home/Church</label>
             <input type="text" id="childHome" placeholder="Springfield" 
-              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
+              class="w-full px-3 py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
           </div>
         </div>
         
-        <div class="grid grid-cols-2 gap-3 mt-6">
-          <button id="saveRegisterBtn" class="h-12 bg-gold text-navy rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all active:scale-95 shadow-md">
+        <div class="grid grid-cols-2 gap-2 sm:gap-3 mt-4 sm:mt-6">
+          <button id="saveRegisterBtn" class="h-11 sm:h-12 bg-gold text-navy rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-opacity-90 transition-all active:scale-95 shadow-md">
             ${icons.check}
-            Save & Check-in
+            <span class="hidden xs:inline">Save &</span> Check-in
           </button>
-          <button id="cancelRegisterBtn" class="h-12 bg-white border-2 border-navy text-navy rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+          <button id="cancelRegisterBtn" class="h-11 sm:h-12 bg-white border-2 border-navy text-navy rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
             ${icons.arrowLeft}
             Cancel
           </button>
@@ -316,9 +335,11 @@ async function handleScan(childId) {
     
     document.getElementById('saveRegisterBtn').addEventListener('click', async () => {
       const name = document.getElementById('childName').value.trim();
+      const age = document.getElementById('childAge').value.trim();
+      const sex = document.getElementById('childSex').value;
       const home = document.getElementById('childHome').value.trim();
       
-      if (!name || !home) {
+      if (!name || !age || !sex || !home) {
         messageArea.innerHTML = `
           <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
             <p class="font-semibold text-red-800">Please fill in all fields</p>
@@ -329,7 +350,7 @@ async function handleScan(childId) {
       }
       
       // Add to local database
-      DB.children.push({ id: childId, name, home });
+      DB.children.push({ id: childId, name, age: parseInt(age), sex, home });
       
       // Record attendance
       await recordAttendance(childId, 'checked-in');
@@ -367,24 +388,34 @@ async function handleScan(childId) {
   }
   
   resultPanel.innerHTML = `
-    <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 animate-slide-up">
-      <div class="space-y-4">
+    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-100 animate-slide-up">
+      <div class="space-y-3">
         <div>
-          <p class="text-sm text-gray-500 mb-1">Child Name</p>
-          <p class="text-xl font-semibold text-navy">${child.name}</p>
+          <p class="text-xs text-gray-500 mb-1">Name</p>
+          <p class="text-lg sm:text-xl font-semibold text-navy break-words">${child.name}</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Age</p>
+            <p class="text-base sm:text-lg font-medium text-gray-700">${child.age || 'N/A'}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Sex</p>
+            <p class="text-base sm:text-lg font-medium text-gray-700">${child.sex || 'N/A'}</p>
+          </div>
         </div>
         <div>
-          <p class="text-sm text-gray-500 mb-1">Home</p>
-          <p class="text-lg font-medium text-gray-700">${child.home}</p>
+          <p class="text-xs text-gray-500 mb-1">Home</p>
+          <p class="text-base sm:text-lg font-medium text-gray-700 break-words">${child.home}</p>
         </div>
       </div>
       
-      <div class="grid grid-cols-2 gap-3 mt-6">
-        <button id="checkinBtn" class="h-12 bg-gold text-navy rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all active:scale-95 shadow-md">
+      <div class="grid grid-cols-2 gap-2 sm:gap-3 mt-4 sm:mt-6">
+        <button id="checkinBtn" class="h-11 sm:h-12 bg-gold text-navy rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-opacity-90 transition-all active:scale-95 shadow-md">
           ${icons.check}
           Check-in
         </button>
-        <button id="checkoutBtn" class="h-12 bg-white border-2 border-navy text-navy rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+        <button id="checkoutBtn" class="h-11 sm:h-12 bg-white border-2 border-navy text-navy rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
           ${icons.arrowLeft}
           Check-out
         </button>
@@ -455,13 +486,13 @@ async function recordAttendance(childId, status) {
 async function renderDashboard() {
   app_element.innerHTML = `
     <div class="min-h-screen bg-warm-bg">
-      <div class="bg-navy text-white px-4 py-4 flex items-center sticky top-0 z-50 shadow-lg">
-        <button id="backBtn" class="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
+      <div class="bg-navy text-white px-3 py-3 flex items-center sticky top-0 z-50 shadow-lg">
+        <button id="backBtn" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity flex-shrink-0 min-w-0">
           ${icons.arrowLeft}
-          <span class="font-semibold">Back</span>
+          <span class="font-semibold text-sm sm:text-base">Back</span>
         </button>
-        <h1 class="text-lg sm:text-xl font-semibold flex-1 text-center px-2 truncate">Dashboard</h1>
-        <div class="w-16 flex-shrink-0"></div>
+        <h1 class="text-base sm:text-xl font-semibold flex-1 text-center px-2 truncate">Dashboard</h1>
+        <div class="w-14 sm:w-16 flex-shrink-0"></div>
       </div>
       
       <div class="max-w-4xl mx-auto p-4">
@@ -543,20 +574,20 @@ function renderTable(records) {
     const statusText = record.status === 'checked-in' ? 'Checked In' : 'Checked Out';
     
     return `
-      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-navy text-lg truncate">${record.name}</h3>
-            <p class="text-sm text-gray-500 mt-0.5">${record.id}</p>
+      <div class="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex-1 min-w-0 pr-2">
+            <h3 class="font-semibold text-navy text-base sm:text-lg truncate">${record.name}</h3>
+            <p class="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">${record.id} • ${record.age || 'N/A'}y • ${record.sex || 'N/A'}</p>
           </div>
-          <span class="inline-flex items-center gap-2 ml-3 flex-shrink-0">
+          <span class="inline-flex items-center gap-1.5 flex-shrink-0">
             <span class="w-2 h-2 rounded-full ${statusColor}"></span>
-            <span class="text-sm font-medium text-gray-700">${statusText}</span>
+            <span class="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">${statusText}</span>
           </span>
         </div>
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-gray-600">${record.home}</span>
-          <span class="text-gray-500">${time}</span>
+        <div class="flex items-center justify-between text-xs sm:text-sm">
+          <span class="text-gray-600 truncate pr-2">${record.home}</span>
+          <span class="text-gray-500 whitespace-nowrap">${time}</span>
         </div>
       </div>
     `;
@@ -570,6 +601,8 @@ function renderTable(records) {
             <tr>
               <th class="px-4 py-3 text-left text-sm font-semibold">Name</th>
               <th class="px-4 py-3 text-left text-sm font-semibold">ID</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold">Age</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold">Sex</th>
               <th class="px-4 py-3 text-left text-sm font-semibold">Home</th>
               <th class="px-4 py-3 text-left text-sm font-semibold">Status</th>
               <th class="px-4 py-3 text-left text-sm font-semibold">Time</th>
@@ -588,6 +621,8 @@ function renderTable(records) {
                 <tr class="border-b border-gray-100 hover:bg-gold/5 transition-colors">
                   <td class="px-4 py-3 font-medium text-navy">${record.name}</td>
                   <td class="px-4 py-3 text-gray-600">${record.id}</td>
+                  <td class="px-4 py-3 text-gray-600">${record.age || 'N/A'}</td>
+                  <td class="px-4 py-3 text-gray-600">${record.sex || 'N/A'}</td>
                   <td class="px-4 py-3 text-gray-600">${record.home}</td>
                   <td class="px-4 py-3">
                     <span class="inline-flex items-center gap-2">
@@ -638,10 +673,12 @@ function exportCSV(records) {
   if (records.length === 0) return;
   
   const csv = [
-    ['Name', 'ID', 'Home', 'Status', 'Time'],
+    ['Name', 'ID', 'Age', 'Sex', 'Home', 'Status', 'Time'],
     ...records.map(r => [
       r.name,
       r.id,
+      r.age || 'N/A',
+      r.sex || 'N/A',
       r.home,
       r.status,
       new Date(r.time).toLocaleString()
