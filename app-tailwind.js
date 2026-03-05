@@ -22,13 +22,7 @@ const icons = {
 
 // Database
 const DB = {
-  children: [
-    { id: 'C001', name: 'Emma Johnson', home: 'Springfield' },
-    { id: 'C002', name: 'Noah Williams', home: 'Riverside' },
-    { id: 'C003', name: 'Olivia Brown', home: 'Lakeside' },
-    { id: 'C004', name: 'Liam Davis', home: 'Springfield' },
-    { id: 'C005', name: 'Ava Martinez', home: 'Hillview' }
-  ],
+  children: [],
   
   getChild(id) {
     return this.children.find(c => c.id === id);
@@ -267,10 +261,11 @@ function stopScanner() {
 function simulateScan() {
   if (!scannerActive) return;
   
-  const children = DB.children;
-  const randomChild = children[Math.floor(Math.random() * children.length)];
+  // Simulate scanning a random QR code
+  const randomNum = Math.floor(Math.random() * 100) + 1;
+  const randomId = `QR${String(randomNum).padStart(3, '0')}`;
   
-  handleScan(randomChild.id);
+  handleScan(randomId);
 }
 
 async function handleScan(childId) {
