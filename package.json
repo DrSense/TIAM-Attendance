@@ -8,10 +8,18 @@
     "build:css": "npx tailwindcss -i styles-src.css -o styles-compiled.css --minify",
     "watch:css": "npx tailwindcss -i styles-src.css -o styles-compiled.css --watch"
   },
-  "keywords": ["pwa", "attendance", "church", "qr-scanner"],
+  "keywords": [
+    "pwa",
+    "attendance",
+    "church",
+    "qr-scanner"
+  ],
   "author": "TIAM",
   "license": "MIT",
   "devDependencies": {
     "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
   }
 }
