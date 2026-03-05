@@ -265,11 +265,10 @@ function stopScanner() {
 function simulateScan() {
   if (!scannerActive) return;
   
-  // Simulate scanning a random QR code
-  const randomNum = Math.floor(Math.random() * 100) + 1;
-  const randomId = `QR${String(randomNum).padStart(3, '0')}`;
+  // Always scan QR001 for demo purposes
+  const demoId = 'QR001';
   
-  handleScan(randomId);
+  handleScan(demoId);
 }
 
 async function handleScan(childId) {
@@ -277,6 +276,12 @@ async function handleScan(childId) {
   const resultPanel = document.getElementById('resultPanel');
   const messageArea = document.getElementById('messageArea');
   const video = document.getElementById('video');
+  
+  // Check if already being processed
+  if (resultPanel && !resultPanel.classList.contains('hidden')) {
+    console.log('Scan already in progress, ignoring duplicate scan');
+    return;
+  }
   
   if (!child) {
     // Show registration form for new QR code
@@ -343,6 +348,18 @@ async function handleScan(childId) {
         messageArea.innerHTML = `
           <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
             <p class="font-semibold text-red-800">Please fill in all fields</p>
+          </div>
+        `;
+        setTimeout(() => messageArea.innerHTML = '', 3000);
+        return;
+      }
+      
+      // Check if ID already exists
+      const existingChild = DB.getChild(childId);
+      if (existingChild) {
+        messageArea.innerHTML = `
+          <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
+            <p class="font-semibold text-red-800">This QR code is already registered</p>
           </div>
         `;
         setTimeout(() => messageArea.innerHTML = '', 3000);
