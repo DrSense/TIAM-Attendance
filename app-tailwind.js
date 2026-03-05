@@ -280,20 +280,71 @@ async function handleScan(childId) {
   const video = document.getElementById('video');
   
   if (!child) {
-    messageArea.innerHTML = `
-      <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
-        <div class="flex items-start gap-3">
-          ${icons.alertCircle}
+    // Show registration form for new QR code
+    if (video) {
+      video.classList.add('animate-flash-green');
+      setTimeout(() => video.classList.remove('animate-flash-green'), 500);
+    }
+    
+    resultPanel.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 animate-slide-up">
+        <h3 class="text-lg font-semibold text-navy mb-4">New QR Code: ${childId}</h3>
+        <p class="text-sm text-gray-600 mb-4">Enter child information:</p>
+        
+        <div class="space-y-3">
           <div>
-            <p class="font-semibold text-red-800">Child Not Found</p>
-            <p class="text-sm text-red-600 mt-1">Please try again or contact admin</p>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Child Name</label>
+            <input type="text" id="childName" placeholder="Emma Johnson" 
+              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
           </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Home/Church</label>
+            <input type="text" id="childHome" placeholder="Springfield" 
+              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3 mt-6">
+          <button id="saveRegisterBtn" class="h-12 bg-gold text-navy rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all active:scale-95 shadow-md">
+            ${icons.check}
+            Save & Check-in
+          </button>
+          <button id="cancelRegisterBtn" class="h-12 bg-white border-2 border-navy text-navy rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+            ${icons.arrowLeft}
+            Cancel
+          </button>
         </div>
       </div>
     `;
-    setTimeout(() => {
-      messageArea.innerHTML = '';
-    }, 3000);
+    
+    resultPanel.classList.remove('hidden');
+    
+    document.getElementById('saveRegisterBtn').addEventListener('click', async () => {
+      const name = document.getElementById('childName').value.trim();
+      const home = document.getElementById('childHome').value.trim();
+      
+      if (!name || !home) {
+        messageArea.innerHTML = `
+          <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
+            <p class="font-semibold text-red-800">Please fill in all fields</p>
+          </div>
+        `;
+        setTimeout(() => messageArea.innerHTML = '', 3000);
+        return;
+      }
+      
+      // Add to local database
+      DB.children.push({ id: childId, name, home });
+      
+      // Record attendance
+      await recordAttendance(childId, 'checked-in');
+    });
+    
+    document.getElementById('cancelRegisterBtn').addEventListener('click', () => {
+      resultPanel.classList.add('hidden');
+      resultPanel.innerHTML = '';
+    });
+    
     return;
   }
   
