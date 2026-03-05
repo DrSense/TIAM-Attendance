@@ -224,7 +224,13 @@ async function startScanner() {
       { facingMode: "environment" },
       {
         fps: 10,
-        qrbox: { width: 250, height: 250 }
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          // Make qrbox 80% of the smaller dimension
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const qrboxSize = Math.floor(minEdge * 0.8);
+          return { width: qrboxSize, height: qrboxSize };
+        },
+        aspectRatio: 1.0
       },
       (decodedText) => {
         // QR code scanned successfully
@@ -361,6 +367,19 @@ async function handleScan(childId) {
         messageArea.innerHTML = `
           <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
             <p class="font-semibold text-red-800">This QR code is already registered</p>
+          </div>
+        `;
+        setTimeout(() => messageArea.innerHTML = '', 3000);
+        return;
+      }
+      
+      // Check if same name already exists
+      const duplicateName = DB.children.find(c => c.name.toLowerCase() === name.toLowerCase());
+      if (duplicateName) {
+        messageArea.innerHTML = `
+          <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
+            <p class="font-semibold text-red-800">This name is already registered</p>
+            <p class="text-sm text-red-600 mt-1">Registered as: ${duplicateName.id}</p>
           </div>
         `;
         setTimeout(() => messageArea.innerHTML = '', 3000);
