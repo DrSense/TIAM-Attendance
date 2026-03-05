@@ -419,13 +419,17 @@ async function handleScan(childId) {
         <div class="flex items-start gap-3">
           ${icons.alertCircle}
           <div>
-            <p class="font-semibold text-orange-800">Already Checked In Today</p>
+            <p class="font-semibold text-orange-800">Already Checked In</p>
+            <p class="text-sm text-orange-600 mt-1">${child.name} is already checked in today</p>
           </div>
         </div>
       </div>
     `;
     setTimeout(() => {
       messageArea.innerHTML = '';
+      if (html5QrCode && scannerActive) {
+        html5QrCode.resume();
+      }
     }, 3000);
     return;
   }
