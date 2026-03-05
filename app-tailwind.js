@@ -133,8 +133,8 @@ function renderHome() {
     <div class="min-h-screen flex items-center justify-center p-4">
       <div class="w-full max-w-md">
         <div class="flex justify-center mb-8">
-          <div class="w-18 h-18 bg-white rounded-xl flex items-center justify-center shadow-lg p-3">
-            <img src="Logo.png" alt="TIAM Logo" class="w-full h-full object-contain">
+          <div class="w-15 h-15 bg-white rounded-xl flex items-center justify-center shadow-lg p-2">
+            <img src="Logo.png" alt="TIAM Logo" class="w-full h-full object-contain rounded-lg">
           </div>
         </div>
         
@@ -337,7 +337,7 @@ async function handleScan(childId) {
             Cancel
           </button>
         </div>
-        <button id="refreshScannerBtn" class="w-full h-10 mt-3 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-all">
+        <button id="refreshScannerBtn" class="w-full h-11 mt-5 bg-navy text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-md">
           ↻ Ready for Next Scan
         </button>
       </div>
@@ -465,7 +465,7 @@ async function handleScan(childId) {
           Check-out
         </button>
       </div>
-      <button id="refreshScannerBtn2" class="w-full h-10 mt-3 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-all">
+      <button id="refreshScannerBtn2" class="w-full h-11 mt-5 bg-navy text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-md">
         ↻ Ready for Next Scan
       </button>
     </div>
