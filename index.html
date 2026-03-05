@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles-compiled.css">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     /* iOS Safari fixes */
     body {
@@ -28,6 +29,13 @@
     /* Prevent zoom on input focus */
     input, select, textarea {
       font-size: 16px !important;
+    }
+    /* Hide html5-qrcode UI */
+    #qr-reader__dashboard_section_csr {
+      display: none !important;
+    }
+    #qr-reader {
+      border: none !important;
     }
   </style>
 </head>

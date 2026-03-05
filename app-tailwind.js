@@ -171,6 +171,7 @@ function renderHome() {
 let stream = null;
 let scannerActive = false;
 let lastScannedId = null;
+let html5QrCode = null;
 
 function renderScanner() {
   app_element.innerHTML = `
@@ -187,15 +188,13 @@ function renderScanner() {
       <div class="max-w-md mx-auto p-4">
         
         <div class="bg-white rounded-2xl p-4 shadow-lg">
-          <div class="relative aspect-square rounded-xl overflow-hidden border-2 border-gold bg-black shadow-md">
-            <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
-          </div>
+          <div id="qr-reader" class="relative aspect-square rounded-xl overflow-hidden border-2 border-gold bg-black shadow-md"></div>
         </div>
         
         <div id="messageArea" class="mt-4"></div>
         <div id="resultPanel" class="hidden mt-4"></div>
         
-        <p class="text-center text-sm text-gray-500 mt-4">Tip: Click video for demo scan</p>
+        <p class="text-center text-sm text-gray-500 mt-4">Point camera at QR code to scan</p>
       </div>
     </div>
   `;
@@ -209,7 +208,6 @@ function renderScanner() {
 }
 
 async function startScanner() {
-  const video = document.getElementById('video');
   const messageArea = document.getElementById('messageArea');
   
   try {
@@ -220,27 +218,30 @@ async function startScanner() {
       </div>
     `;
     
-    // iOS Safari compatibility: request with constraints
-    const constraints = {
-      video: {
-        facingMode: 'environment',
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
+    html5QrCode = new Html5Qrcode("qr-reader");
+    
+    await html5QrCode.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      (decodedText) => {
+        // QR code scanned successfully
+        if (decodedText && decodedText !== lastScannedId) {
+          handleScan(decodedText);
+        }
+      },
+      (errorMessage) => {
+        // Scanning errors (ignore)
       }
-    };
+    );
     
-    stream = await navigator.mediaDevices.getUserMedia(constraints);
-    
-    video.srcObject = stream;
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('webkit-playsinline', 'true');
-    await video.play();
     scannerActive = true;
     messageArea.innerHTML = '';
     
-    video.addEventListener('click', simulateScan);
-    
   } catch (error) {
+    console.error('Scanner error:', error);
     messageArea.innerHTML = `
       <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
         <div class="flex items-start gap-3">
@@ -256,31 +257,20 @@ async function startScanner() {
 }
 
 function stopScanner() {
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      html5QrCode.clear();
+      html5QrCode = null;
+    }).catch(() => {});
   }
   scannerActive = false;
-}
-
-function simulateScan() {
-  if (!scannerActive) return;
-  
-  // Prompt user to enter QR code ID
-  const qrId = prompt('Enter QR code (e.g., QR001, QR002):');
-  if (!qrId) return;
-  
-  const formattedId = qrId.toUpperCase().trim();
-  lastScannedId = formattedId;
-  
-  handleScan(formattedId);
+  lastScannedId = null;
 }
 
 async function handleScan(childId) {
   const child = DB.getChild(childId);
   const resultPanel = document.getElementById('resultPanel');
   const messageArea = document.getElementById('messageArea');
-  const video = document.getElementById('video');
   
   // Check if already being processed
   if (resultPanel && !resultPanel.classList.contains('hidden')) {
@@ -288,13 +278,14 @@ async function handleScan(childId) {
     return;
   }
   
+  // Pause scanner while processing
+  if (html5QrCode && scannerActive) {
+    await html5QrCode.pause();
+  }
+  
   if (!child) {
+    lastScannedId = childId;
     // Show registration form for new QR code
-    if (video) {
-      video.classList.add('animate-flash-green');
-      setTimeout(() => video.classList.remove('animate-flash-green'), 500);
-    }
-    
     lastScannedId = childId;
     
     resultPanel.innerHTML = `
@@ -394,6 +385,9 @@ async function handleScan(childId) {
       resultPanel.innerHTML = '';
       messageArea.innerHTML = '';
       lastScannedId = null;
+      if (html5QrCode && scannerActive) {
+        html5QrCode.resume();
+      }
     });
     
     return;
@@ -415,11 +409,6 @@ async function handleScan(childId) {
       messageArea.innerHTML = '';
     }, 3000);
     return;
-  }
-  
-  if (video) {
-    video.classList.add('animate-flash-green');
-    setTimeout(() => video.classList.remove('animate-flash-green'), 500);
   }
   
   lastScannedId = childId;
@@ -478,6 +467,9 @@ async function handleScan(childId) {
     resultPanel.innerHTML = '';
     messageArea.innerHTML = '';
     lastScannedId = null;
+    if (html5QrCode && scannerActive) {
+      html5QrCode.resume();
+    }
   });
 }
 
@@ -517,6 +509,9 @@ async function recordAttendance(childId, status) {
       messageArea.innerHTML = '';
       resultPanel.innerHTML = '';
       lastScannedId = null;
+      if (html5QrCode && scannerActive) {
+        html5QrCode.resume();
+      }
     }, 2000);
   } else {
     messageArea.innerHTML = `
