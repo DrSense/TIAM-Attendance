@@ -31,11 +31,13 @@ const DB = {
     // Load children from Firebase
     await this.loadChildren();
     
-    // Force re-save if not exactly 50 kids
-    if (this.children.length !== 50) {
-      console.log(`Found ${this.children.length} children, expected 50. Re-saving...`);
+    // Only save preloaded children if database is empty or incomplete
+    if (this.children.length < 50) {
+      console.log(`Found ${this.children.length} children, expected 50. Adding missing children...`);
       await this.savePreloadedChildren();
       await this.loadChildren();
+    } else {
+      console.log(`Database has ${this.children.length} children - no need to add preloaded data`);
     }
     
     this.initialized = true;
@@ -107,11 +109,17 @@ const DB = {
     ];
     
     try {
-      for (const child of preloadedKids) {
+      // Only add children that don't already exist
+      const existingIds = this.children.map(c => c.id);
+      const missingChildren = preloadedKids.filter(child => !existingIds.includes(child.id));
+      
+      for (const child of missingChildren) {
         await setDoc(doc(db, 'children', child.id), child);
       }
-      this.children = preloadedKids;
-      console.log('Saved 50 pre-loaded children to Firebase');
+      
+      // Update local array
+      this.children = [...this.children, ...missingChildren];
+      console.log(`Added ${missingChildren.length} missing children to Firebase`);
     } catch (error) {
       console.error('Error saving pre-loaded children:', error);
     }
@@ -193,7 +201,8 @@ const DB = {
         return record.id === childId && record.status === 'checked-in' && recordDate === today;
       });
     } catch (error) {
-      console.error('Error checking duplicate:', error);
+      console.error('Error checking duplicate (probably blocked by ad blocker):', error);
+      // If duplicate check fails, assume no duplicate to allow check-in
       return false;
     }
   }
@@ -464,7 +473,10 @@ async function startScanner() {
       (decodedText) => {
         // QR code scanned successfully
         if (decodedText && decodedText !== lastScannedId) {
+          console.log('New scan detected:', decodedText, 'Previous:', lastScannedId);
           handleScan(decodedText);
+        } else {
+          console.log('Ignoring duplicate scan:', decodedText);
         }
       },
       (errorMessage) => {
@@ -503,7 +515,14 @@ function stopScanner() {
 }
 
 async function handleScan(childId) {
+  console.log('=== SCAN DEBUG ===');
+  console.log('Scanned ID:', childId);
+  console.log('DB initialized:', DB.initialized);
+  console.log('Total children in DB:', DB.children.length);
+  
   const child = DB.getChild(childId);
+  console.log('Found child:', child);
+  
   const resultPanel = document.getElementById('resultPanel');
   const messageArea = document.getElementById('messageArea');
   
@@ -519,9 +538,9 @@ async function handleScan(childId) {
   }
   
   if (!child) {
+    console.log('Child not found - showing registration form');
     lastScannedId = childId;
     // Show registration form for new QR code
-    lastScannedId = childId;
     
     resultPanel.innerHTML = `
       <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-100 animate-slide-up">
@@ -643,7 +662,7 @@ async function handleScan(childId) {
       resultPanel.classList.add('hidden');
       resultPanel.innerHTML = '';
       messageArea.innerHTML = '';
-      lastScannedId = null;
+      lastScannedId = null; // Clear the last scanned ID
       if (html5QrCode && scannerActive) {
         html5QrCode.resume();
       }
@@ -652,6 +671,7 @@ async function handleScan(childId) {
     return;
   }
   
+  console.log('Child found - checking for duplicates');
   const isDuplicate = await DB.checkDuplicate(childId);
   if (isDuplicate) {
     messageArea.innerHTML = `
@@ -729,7 +749,7 @@ async function handleScan(childId) {
     resultPanel.classList.add('hidden');
     resultPanel.innerHTML = '';
     messageArea.innerHTML = '';
-    lastScannedId = null;
+    lastScannedId = null; // Clear the last scanned ID
     if (html5QrCode && scannerActive) {
       html5QrCode.resume();
     }
@@ -771,7 +791,7 @@ async function recordAttendance(childId, status) {
     setTimeout(() => {
       messageArea.innerHTML = '';
       resultPanel.innerHTML = '';
-      lastScannedId = null;
+      lastScannedId = null; // Clear the last scanned ID
       if (html5QrCode && scannerActive) {
         html5QrCode.resume();
       }

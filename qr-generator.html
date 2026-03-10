@@ -165,27 +165,29 @@
     </div>
     
     <div class="controls">
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; color: #0B1D3A; font-weight: 600;">How many QR codes do you need?</label>
+      <button class="btn" onclick="generateExisting()">Show Existing Children (QR001-QR050)</button>
+      <div style="margin: 16px 0;">
+        <label style="display: block; margin-bottom: 8px; color: #0B1D3A; font-weight: 600;">Add new QR codes:</label>
         <input type="number" id="qrCount" min="1" max="500" value="10" style="width: 120px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
+        <button class="btn" onclick="generateNew()" style="margin-left: 12px;">Add New QR Codes</button>
       </div>
-      <button class="btn" onclick="generateAll()">Generate QR Codes</button>
-      <button class="btn btn-secondary" onclick="window.print()" style="display: none;" id="printBtn">Print Badges</button>
+      <button class="btn btn-secondary" onclick="window.print()" id="printBtn">Print All Badges</button>
     </div>
     
-    <div class="qr-grid" id="qrGrid">
-      <div class="loading">Click "Generate All QR Codes" to start</div>
+    <div class="qr-grid" id="existingGrid"></div>
+    <div id="separator" style="display: none; margin: 40px 0; border-top: 3px solid #0B1D3A; position: relative;">
+      <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #F6F4EF; padding: 0 20px; color: #0B1D3A; font-weight: 600;">NEW QR CODES</div>
     </div>
+    <div class="qr-grid" id="newGrid"></div>
     
     <div class="instructions">
       <h3>📋 Instructions</h3>
       <ul>
-        <li>Enter the number of QR codes you need</li>
-        <li>Click "Generate QR Codes" to create blank badges</li>
-        <li>QR codes start from QR051 (QR001-QR050 are pre-assigned)</li>
-        <li>Click "Print Badges" to print directly or save as PDF</li>
-        <li>Write child names on printed badges manually</li>
-        <li>Each QR code has a unique ID</li>
+        <li>Click "Show Existing Children" to display QR001-QR050 with names</li>
+        <li>Enter number of additional QR codes needed</li>
+        <li>Click "Add New QR Codes" to create blank badges (starts from QR051)</li>
+        <li>Click "Print All Badges" to print everything</li>
+        <li>Write names on new blank badges manually</li>
         <li>Scan badges using the TIAM Attendance app</li>
       </ul>
     </div>
@@ -193,32 +195,107 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
-    console.log('=== QR GENERATOR LOADED ===');
-    console.log('Script initialized at:', new Date().toISOString());
-    
-    function generateAll() {
-      console.log('\n=== GENERATE ALL CALLED ===');
-      const count = parseInt(document.getElementById('qrCount').value);
-      console.log('Requested count:', count);
+    const existingChildren = [
+      { id: 'QR001', name: 'Sochon', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR002', name: 'Wiranranliu', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR003', name: 'G. Joyce Keziya', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR004', name: 'Cabrilina', age: 9, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR005', name: 'Sushma L. S', age: 9, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR006', name: 'Sarika L. S', age: 11, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR007', name: 'Thrisha Adhikari', age: 11, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR008', name: 'Rithu Menon', age: 12, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR009', name: 'Jacintha S P', age: 15, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR010', name: 'Ngashaipam', age: 8, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR011', name: 'Mohit', age: 7, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR012', name: 'Shreyas HH', age: 9, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR013', name: 'Manish HH', age: 9, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR014', name: 'Tonshon', age: 11, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR015', name: 'Themson', age: 12, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR016', name: 'Kushal', age: 12, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR017', name: 'Ramsempam', age: 14, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR018', name: 'Harish HH', age: 13, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR019', name: 'Abhishek HH', age: 14, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR020', name: 'Vijayalakshmi', age: 8, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR021', name: 'Methra', age: 9, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR022', name: 'Kaira Kayal', age: 10, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR023', name: 'Rashmitha', age: 11, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR024', name: 'Mahima RH', age: 11, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR025', name: 'Mercy RH', age: 12, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR026', name: 'Samantha', age: 13, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR027', name: 'Kanishka', age: 14, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR028', name: 'Mogana', age: 15, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR029', name: 'Anita RH', age: 16, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR030', name: 'Harsha Vardhan', age: 6, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR031', name: 'Neelesh', age: 9, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR032', name: 'Charan', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR033', name: 'Mithun', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR034', name: 'Chandu SH', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR035', name: 'Isack', age: 12, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR036', name: 'Shrishail', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR037', name: 'Yogesh SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR038', name: 'Ajay SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR039', name: 'Madan SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR040', name: 'Yashwanth', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR041', name: 'Nandhan T.', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR042', name: 'Delwin Immanuel J.', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR044', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR045', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR046', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR047', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR048', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR049', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR050', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' }
+    ];
+
+    function generateExisting() {
+      const grid = document.getElementById('existingGrid');
+      grid.innerHTML = '';
       
+      existingChildren.forEach(child => {
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+        
+        const qrContainer = document.createElement('div');
+        qrContainer.id = `qr-${child.id}`;
+        
+        card.innerHTML = `
+          <div class="logo">
+            <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
+          </div>
+          <h3>${child.name}</h3>
+          <div class="id">${child.id}</div>
+          <div class="home">${child.home}</div>
+        `;
+        
+        card.appendChild(qrContainer);
+        grid.appendChild(card);
+        
+        new QRCode(qrContainer, {
+          text: child.id,
+          width: 200,
+          height: 200,
+          colorDark: "#0B1D3A",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      });
+    }
+
+    function generateNew() {
+      const count = parseInt(document.getElementById('qrCount').value);
       if (!count || count < 1 || count > 500) {
-        console.error('Invalid count:', count);
         alert('Please enter a number between 1 and 500');
         return;
       }
       
-      const grid = document.getElementById('qrGrid');
-      console.log('Grid element found:', !!grid);
-      grid.innerHTML = '';
-      console.log('Grid cleared');
+      const grid = document.getElementById('newGrid');
+      const separator = document.getElementById('separator');
       
-      console.log('\n=== STARTING QR CODE GENERATION ===');
-      console.log('Starting from QR051 (first 50 IDs are pre-assigned)');
+      separator.style.display = 'block';
       
       for (let i = 1; i <= count; i++) {
-        const qrNumber = 50 + i; // Start from QR051
+        const qrNumber = 50 + i;
         const id = `QR${String(qrNumber).padStart(3, '0')}`;
-        console.log(`Generating badge ${i}/${count} - ID: ${id}`);
         
         const card = document.createElement('div');
         card.className = 'qr-card';
@@ -226,7 +303,7 @@
         const qrContainer = document.createElement('div');
         qrContainer.id = `qr-${id}`;
         
-        const cardHTML = `
+        card.innerHTML = `
           <div class="logo">
             <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
           </div>
@@ -235,16 +312,10 @@
           <div class="home" style="min-height: 20px; border-bottom: 1px solid #ddd; margin-top: 8px;">_________________</div>
         `;
         
-        console.log(`  Card HTML for ${id}:`, cardHTML.substring(0, 100) + '...');
-        card.innerHTML = cardHTML;
-        
         card.appendChild(qrContainer);
         grid.appendChild(card);
-        console.log(`  Card ${id} added to grid`);
         
-        // Generate QR code
-        console.log(`  Generating QR code for: "${id}"`);
-        const qrCode = new QRCode(qrContainer, {
+        new QRCode(qrContainer, {
           text: id,
           width: 200,
           height: 200,
@@ -252,46 +323,103 @@
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.H
         });
-        console.log(`  QR code ${id} generated successfully`);
-        console.log(`  QR code data encoded: "${id}"`);
-        console.log(`  QR code element:`, qrContainer.querySelector('canvas') || qrContainer.querySelector('img'));
+      }
+    }
+
+    // Auto-generate existing children on page load
+    window.addEventListener('load', generateExisting);
+  </script>
+</body>
+</html>id: 'QR044', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR045', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR046', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR047', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR048', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR049', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR050', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' }
+    ];
+
+    function generateExisting() {
+      const grid = document.getElementById('existingGrid');
+      grid.innerHTML = '';
+      
+      existingChildren.forEach(child => {
+        const card = document.createElement('div');
+        card.className = 'qr-card';
         
-        // Verify what's actually in the card
-        const cardContent = {
-          id: id,
-          nameField: card.querySelector('h3').textContent.trim(),
-          idField: card.querySelector('.id').textContent.trim(),
-          homeField: card.querySelector('.home').textContent.trim(),
-          qrCodeData: id
-        };
-        console.log(`  Card ${id} content verification:`, cardContent);
+        const qrContainer = document.createElement('div');
+        qrContainer.id = `qr-${child.id}`;
+        
+        card.innerHTML = `
+          <div class="logo">
+            <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
+          </div>
+          <h3>${child.name}</h3>
+          <div class="id">${child.id}</div>
+          <div class="home">${child.home}</div>
+        `;
+        
+        card.appendChild(qrContainer);
+        grid.appendChild(card);
+        
+        new QRCode(qrContainer, {
+          text: child.id,
+          width: 200,
+          height: 200,
+          colorDark: "#0B1D3A",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      });
+    }
+
+    function generateNew() {
+      const count = parseInt(document.getElementById('qrCount').value);
+      if (!count || count < 1 || count > 500) {
+        alert('Please enter a number between 1 and 500');
+        return;
       }
       
-      console.log('\n=== GENERATION COMPLETE ===');
-      console.log('Total badges created:', count);
-      console.log('ID range: QR051 to QR' + String(50 + count).padStart(3, '0'));
+      const grid = document.getElementById('newGrid');
+      const separator = document.getElementById('separator');
       
-      // Final verification
-      console.log('\n=== FINAL VERIFICATION ===');
-      const allCards = grid.querySelectorAll('.qr-card');
-      console.log('Total cards in DOM:', allCards.length);
-      allCards.forEach((card, index) => {
-        const cardData = {
-          index: index + 1,
-          id: card.querySelector('.id')?.textContent.trim(),
-          name: card.querySelector('h3')?.textContent.trim(),
-          home: card.querySelector('.home')?.textContent.trim(),
-          hasQRCode: !!card.querySelector('canvas') || !!card.querySelector('img')
-        };
-        console.log(`Card ${index + 1}:`, cardData);
-      });
+      separator.style.display = 'block';
       
-      // Show print button after generation
-      document.getElementById('printBtn').style.display = 'inline-block';
-      console.log('Print button shown');
-      console.log('=== END ===\n');
-      
-      // Add click handler to inspect individual QR codes
+      for (let i = 1; i <= count; i++) {
+        const qrNumber = 50 + i;
+        const id = `QR${String(qrNumber).padStart(3, '0')}`;
+        
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+        
+        const qrContainer = document.createElement('div');
+        qrContainer.id = `qr-${id}`;
+        
+        card.innerHTML = `
+          <div class="logo">
+            <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
+          </div>
+          <h3 style="min-height: 28px; border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-bottom: 12px;">_________________</h3>
+          <div class="id">${id}</div>
+          <div class="home" style="min-height: 20px; border-bottom: 1px solid #ddd; margin-top: 8px;">_________________</div>
+        `;
+        
+        card.appendChild(qrContainer);
+        grid.appendChild(card);
+        
+        new QRCode(qrContainer, {
+          text: id,
+          width: 200,
+          height: 200,
+          colorDark: "#0B1D3A",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+    }
+
+    // Auto-generate existing children on page load
+    window.addEventListener('load', generateExisting); Add click handler to inspect individual QR codes
       allCards.forEach(card => {
         card.addEventListener('click', function() {
           const id = this.querySelector('.id').textContent.trim();
