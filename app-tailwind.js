@@ -31,10 +31,11 @@ const DB = {
     // Load children from Firebase
     await this.loadChildren();
     
-    // If no children in Firebase, save the pre-loaded 50 kids
-    if (this.children.length === 0) {
-      console.log('No children in Firebase, saving pre-loaded 50 kids...');
+    // Force re-save if not exactly 50 kids
+    if (this.children.length !== 50) {
+      console.log(`Found ${this.children.length} children, expected 50. Re-saving...`);
       await this.savePreloadedChildren();
+      await this.loadChildren();
     }
     
     this.initialized = true;
