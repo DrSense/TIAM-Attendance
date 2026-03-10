@@ -161,8 +161,22 @@ const DB = {
         checkInTime: status === 'checked-in' ? now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : null
       };
       
-      await addDoc(collection(db, 'attendance'), record);
-      return true;
+      // Try to save to Firebase
+      try {
+        await addDoc(collection(db, 'attendance'), record);
+        return true;
+      } catch (error) {
+        // If offline, save to queue
+        console.log('Offline - adding to queue');
+        await OfflineQueue.add({
+          childId,
+          status,
+          time: record.time,
+          timestamp: record.timestamp,
+          checkInTime: record.checkInTime
+        });
+        return true;
+      }
     } catch (error) {
       console.error('Error adding attendance:', error);
       return false;
@@ -230,6 +244,116 @@ class Router {
 
 const router = new Router();
 const app_element = document.getElementById('app');
+
+// Offline Queue Manager
+const OfflineQueue = {
+  dbName: 'tiam-attendance-db',
+  storeName: 'offline-queue',
+  db: null,
+  
+  async init() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, 1);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve();
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(this.storeName)) {
+          db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
+        }
+      };
+    });
+  },
+  
+  async add(record) {
+    if (!this.db) await this.init();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction([this.storeName], 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.add({
+        ...record,
+        queuedAt: Date.now()
+      });
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  },
+  
+  async getAll() {
+    if (!this.db) await this.init();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction([this.storeName], 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.getAll();
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  },
+  
+  async clear() {
+    if (!this.db) await this.init();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction([this.storeName], 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.clear();
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+  },
+  
+  async syncAll() {
+    const queue = await this.getAll();
+    if (queue.length === 0) return { synced: 0, failed: 0 };
+    
+    let synced = 0;
+    let failed = 0;
+    
+    for (const item of queue) {
+      try {
+        const child = DB.getChild(item.childId);
+        if (!child) {
+          failed++;
+          continue;
+        }
+        
+        const record = {
+          id: item.childId,
+          name: child.name,
+          age: child.age || null,
+          sex: child.sex || null,
+          home: child.home,
+          status: item.status,
+          time: item.time,
+          timestamp: item.timestamp,
+          checkInTime: item.checkInTime
+        };
+        
+        await addDoc(collection(db, 'attendance'), record);
+        synced++;
+      } catch (error) {
+        console.error('Failed to sync item:', error);
+        failed++;
+      }
+    }
+    
+    if (failed === 0) {
+      await this.clear();
+    }
+    
+    return { synced, failed };
+  }
+};
 
 // Home Screen
 function renderHome() {
@@ -881,8 +1005,18 @@ router.register('/scan', renderScanner);
 router.register('/dashboard', renderDashboard);
 
 // Initialize app
+await OfflineQueue.init();
 await DB.init();
 router.init();
+
+// Sync offline queue when back online
+window.addEventListener('online', async () => {
+  console.log('Back online, syncing offline queue...');
+  const result = await OfflineQueue.syncAll();
+  if (result.synced > 0) {
+    console.log(`Synced ${result.synced} offline records`);
+  }
+});
 
 // Register service worker
 if ('serviceWorker' in navigator) {
