@@ -17,7 +17,8 @@ const icons = {
   search: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
   alertCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
   loader: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>',
-  inbox: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>'
+  inbox: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>',
+  home: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
 };
 
 // Database
@@ -419,14 +420,20 @@ function renderScanner() {
           ${icons.arrowLeft}
           <span class="font-semibold text-sm sm:text-base">Back</span>
         </button>
-        <h1 class="text-base sm:text-xl font-semibold flex-1 text-center px-2 truncate">Scanner</h1>
-        <div class="w-14 sm:w-16 flex-shrink-0"></div>
+        <div class="flex-1 text-center px-2">
+          <div class="text-xs text-gray-300 mb-1">Home > Scanner</div>
+          <h1 class="text-base sm:text-xl font-semibold truncate">Scanner</h1>
+        </div>
+        <button id="homeBtn" class="flex items-center gap-1 hover:opacity-80 transition-opacity flex-shrink-0">
+          ${icons.home}
+        </button>
       </div>
       
       <div class="max-w-md mx-auto p-4">
         
         <div class="bg-white rounded-2xl p-4 shadow-lg">
-          <div id="qr-reader" class="relative aspect-square rounded-xl overflow-hidden border-2 border-gold bg-black shadow-md"></div>
+          <div id="qr-reader" class="relative aspect-square rounded-xl overflow-hidden border-2 border-gray-300 bg-black shadow-md transition-colors duration-300"></div>
+          <div id="scannerStatus" class="text-center mt-2 text-sm font-medium text-gray-600">Starting camera...</div>
         </div>
         
         <div id="messageArea" class="mt-4"></div>
@@ -442,13 +449,23 @@ function renderScanner() {
     router.navigate('/');
   });
   
+  document.getElementById('homeBtn').addEventListener('click', () => {
+    stopScanner();
+    router.navigate('/');
+  });
+  
   startScanner();
 }
 
 async function startScanner() {
   const messageArea = document.getElementById('messageArea');
+  const scannerStatus = document.getElementById('scannerStatus');
+  const qrReader = document.getElementById('qr-reader');
   
   try {
+    scannerStatus.textContent = 'Starting camera...';
+    qrReader.className = qrReader.className.replace('border-gray-300', 'border-yellow-400');
+    
     messageArea.innerHTML = `
       <div class="flex items-center justify-center gap-3 text-navy">
         ${icons.loader}
@@ -463,7 +480,6 @@ async function startScanner() {
       {
         fps: 10,
         qrbox: function(viewfinderWidth, viewfinderHeight) {
-          // Make qrbox 80% of the smaller dimension
           const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
           const qrboxSize = Math.floor(minEdge * 0.8);
           return { width: qrboxSize, height: qrboxSize };
@@ -471,7 +487,6 @@ async function startScanner() {
         aspectRatio: 1.0
       },
       (decodedText) => {
-        // QR code scanned successfully
         if (decodedText && decodedText !== lastScannedId) {
           console.log('New scan detected:', decodedText, 'Previous:', lastScannedId);
           handleScan(decodedText);
@@ -486,9 +501,13 @@ async function startScanner() {
     
     scannerActive = true;
     messageArea.innerHTML = '';
+    scannerStatus.textContent = '📷 Scanning - Point camera at QR code';
+    qrReader.className = qrReader.className.replace('border-yellow-400', 'border-green-500');
     
   } catch (error) {
     console.error('Scanner error:', error);
+    scannerStatus.textContent = '❌ Camera access denied';
+    qrReader.className = qrReader.className.replace('border-yellow-400', 'border-red-500');
     messageArea.innerHTML = `
       <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
         <div class="flex items-start gap-3">
@@ -525,6 +544,8 @@ async function handleScan(childId) {
   
   const resultPanel = document.getElementById('resultPanel');
   const messageArea = document.getElementById('messageArea');
+  const scannerStatus = document.getElementById('scannerStatus');
+  const qrReader = document.getElementById('qr-reader');
   
   // Check if already being processed
   if (resultPanel && !resultPanel.classList.contains('hidden')) {
@@ -535,6 +556,8 @@ async function handleScan(childId) {
   // Pause scanner while processing
   if (html5QrCode && scannerActive) {
     await html5QrCode.pause();
+    scannerStatus.textContent = '⏸️ Paused - Processing scan...';
+    qrReader.className = qrReader.className.replace('border-green-500', 'border-gray-400');
   }
   
   if (!child) {
@@ -570,8 +593,13 @@ async function handleScan(childId) {
           </div>
           <div>
             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Home/Church</label>
-            <input type="text" id="childHome" placeholder="Springfield" 
+            <input type="text" id="childHome" placeholder="Springfield" list="homesList"
               class="w-full px-3 py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-gold focus:outline-none">
+            <datalist id="homesList">
+              <option value="Home of Hope">
+              <option value="Refuge Home">
+              <option value="Shalom Home">
+            </datalist>
           </div>
         </div>
         
@@ -586,7 +614,7 @@ async function handleScan(childId) {
           </button>
         </div>
         <button id="refreshScannerBtn" class="w-full h-11 mt-5 bg-navy text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-md">
-          ↻ Ready for Next Scan
+          📷 Ready for Next Scan
         </button>
       </div>
     `;
@@ -603,6 +631,18 @@ async function handleScan(childId) {
         messageArea.innerHTML = `
           <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
             <p class="font-semibold text-red-800">Please fill in all fields</p>
+          </div>
+        `;
+        setTimeout(() => messageArea.innerHTML = '', 3000);
+        return;
+      }
+      
+      // Validate age range
+      const ageNum = parseInt(age);
+      if (ageNum < 1 || ageNum > 18) {
+        messageArea.innerHTML = `
+          <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
+            <p class="font-semibold text-red-800">Age must be between 1 and 18</p>
           </div>
         `;
         setTimeout(() => messageArea.innerHTML = '', 3000);
@@ -659,10 +699,17 @@ async function handleScan(childId) {
     });
     
     document.getElementById('refreshScannerBtn').addEventListener('click', () => {
+      const scannerStatus = document.getElementById('scannerStatus');
+      const qrReader = document.getElementById('qr-reader');
+      
       resultPanel.classList.add('hidden');
       resultPanel.innerHTML = '';
       messageArea.innerHTML = '';
-      lastScannedId = null; // Clear the last scanned ID
+      lastScannedId = null;
+      
+      scannerStatus.textContent = '📷 Scanning - Point camera at QR code';
+      qrReader.className = qrReader.className.replace('border-gray-400', 'border-green-500');
+      
       if (html5QrCode && scannerActive) {
         html5QrCode.resume();
       }
@@ -730,7 +777,7 @@ async function handleScan(childId) {
         </button>
       </div>
       <button id="refreshScannerBtn2" class="w-full h-11 mt-5 bg-navy text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-md">
-        ↻ Ready for Next Scan
+        📷 Ready for Next Scan
       </button>
     </div>
   `;
@@ -746,10 +793,17 @@ async function handleScan(childId) {
   });
   
   document.getElementById('refreshScannerBtn2').addEventListener('click', () => {
+    const scannerStatus = document.getElementById('scannerStatus');
+    const qrReader = document.getElementById('qr-reader');
+    
     resultPanel.classList.add('hidden');
     resultPanel.innerHTML = '';
     messageArea.innerHTML = '';
-    lastScannedId = null; // Clear the last scanned ID
+    lastScannedId = null;
+    
+    scannerStatus.textContent = '📷 Scanning - Point camera at QR code';
+    qrReader.className = qrReader.className.replace('border-gray-400', 'border-green-500');
+    
     if (html5QrCode && scannerActive) {
       html5QrCode.resume();
     }
@@ -770,17 +824,25 @@ async function recordAttendance(childId, status) {
   const success = await DB.addAttendance(childId, status);
   
   if (success) {
+    // Add sound notification
     if (navigator.vibrate) {
-      navigator.vibrate(100);
+      navigator.vibrate([100, 50, 100]); // Double vibration for success
     }
+    
+    // Try to play a subtle success sound
+    try {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+      audio.volume = 0.1;
+      audio.play().catch(() => {}); // Ignore if audio fails
+    } catch (e) {}
     
     messageArea.innerHTML = `
       <div class="bg-gradient-to-r from-gold/10 to-gold/5 border-l-4 border-gold p-4 rounded-lg animate-slide-in shadow-md">
         <div class="flex items-start gap-3">
           <div class="text-gold">${icons.check}</div>
           <div>
-            <p class="font-semibold text-navy">Attendance Recorded Successfully</p>
-            <p class="text-sm text-gray-600 mt-1">Returning to scanner...</p>
+            <p class="font-semibold text-navy">✅ Attendance Recorded Successfully</p>
+            <p class="text-sm text-gray-600 mt-1">Returning to scanner in 4 seconds...</p>
           </div>
         </div>
       </div>
@@ -789,13 +851,20 @@ async function recordAttendance(childId, status) {
     resultPanel.classList.add('hidden');
     
     setTimeout(() => {
+      const scannerStatus = document.getElementById('scannerStatus');
+      const qrReader = document.getElementById('qr-reader');
+      
       messageArea.innerHTML = '';
       resultPanel.innerHTML = '';
-      lastScannedId = null; // Clear the last scanned ID
+      lastScannedId = null;
+      
+      if (scannerStatus) scannerStatus.textContent = '📷 Scanning - Point camera at QR code';
+      if (qrReader) qrReader.className = qrReader.className.replace('border-gray-400', 'border-green-500');
+      
       if (html5QrCode && scannerActive) {
         html5QrCode.resume();
       }
-    }, 2000);
+    }, 4000);
   } else {
     messageArea.innerHTML = `
       <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
@@ -817,8 +886,13 @@ async function renderDashboard() {
           ${icons.arrowLeft}
           <span class="font-semibold text-sm sm:text-base">Back</span>
         </button>
-        <h1 class="text-base sm:text-xl font-semibold flex-1 text-center px-2 truncate">Dashboard</h1>
-        <div class="w-14 sm:w-16 flex-shrink-0"></div>
+        <div class="flex-1 text-center px-2">
+          <div class="text-xs text-gray-300 mb-1">Home > Dashboard</div>
+          <h1 class="text-base sm:text-xl font-semibold truncate">Dashboard</h1>
+        </div>
+        <button id="homeBtn" class="flex items-center gap-1 hover:opacity-80 transition-opacity flex-shrink-0">
+          ${icons.home}
+        </button>
       </div>
       
       <div class="max-w-4xl mx-auto p-4">
@@ -826,7 +900,7 @@ async function renderDashboard() {
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
             ${icons.search}
           </div>
-          <input type="text" id="searchBar" placeholder="Search name or ID" 
+          <input type="text" id="searchBar" placeholder="Search name, ID, home, age, or sex" 
             class="w-full h-12 pl-10 pr-4 rounded-xl border-2 border-gray-200 focus:border-gold focus:outline-none transition-colors bg-white">
         </div>
         
@@ -850,6 +924,10 @@ async function renderDashboard() {
   `;
   
   document.getElementById('backBtn').addEventListener('click', () => {
+    router.navigate('/');
+  });
+  
+  document.getElementById('homeBtn').addEventListener('click', () => {
     router.navigate('/');
   });
   
@@ -988,7 +1066,10 @@ function filterTable(allRecords) {
   if (searchTerm) {
     records = records.filter(r => 
       r.name.toLowerCase().includes(searchTerm) || 
-      r.id.toLowerCase().includes(searchTerm)
+      r.id.toLowerCase().includes(searchTerm) ||
+      r.home.toLowerCase().includes(searchTerm) ||
+      (r.age && r.age.toString().includes(searchTerm)) ||
+      (r.sex && r.sex.toLowerCase().includes(searchTerm))
     );
   }
   
