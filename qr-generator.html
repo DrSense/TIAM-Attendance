@@ -182,9 +182,10 @@
       <ul>
         <li>Enter the number of QR codes you need</li>
         <li>Click "Generate QR Codes" to create blank badges</li>
+        <li>QR codes start from QR051 (QR001-QR050 are pre-assigned)</li>
         <li>Click "Print Badges" to print directly or save as PDF</li>
         <li>Write child names on printed badges manually</li>
-        <li>Each QR code has a unique ID (QR001, QR002, etc.)</li>
+        <li>Each QR code has a unique ID</li>
         <li>Scan badges using the TIAM Attendance app</li>
       </ul>
     </div>
@@ -212,8 +213,11 @@
       console.log('Grid cleared');
       
       console.log('\n=== STARTING QR CODE GENERATION ===');
+      console.log('Starting from QR051 (first 50 IDs are pre-assigned)');
+      
       for (let i = 1; i <= count; i++) {
-        const id = `QR${String(i).padStart(3, '0')}`;
+        const qrNumber = 50 + i; // Start from QR051
+        const id = `QR${String(qrNumber).padStart(3, '0')}`;
         console.log(`Generating badge ${i}/${count} - ID: ${id}`);
         
         const card = document.createElement('div');
@@ -265,6 +269,7 @@
       
       console.log('\n=== GENERATION COMPLETE ===');
       console.log('Total badges created:', count);
+      console.log('ID range: QR051 to QR' + String(50 + count).padStart(3, '0'));
       
       // Final verification
       console.log('\n=== FINAL VERIFICATION ===');
