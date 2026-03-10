@@ -766,14 +766,10 @@ async function handleScan(childId) {
         </div>
       </div>
       
-      <div class="grid grid-cols-2 gap-2 sm:gap-3 mt-4 sm:mt-6">
-        <button id="checkinBtn" class="h-11 sm:h-12 bg-gold text-navy rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-opacity-90 transition-all active:scale-95 shadow-md">
+      <div class="mt-4 sm:mt-6">
+        <button id="checkinBtn" class="w-full h-11 sm:h-12 bg-gold text-navy rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-opacity-90 transition-all active:scale-95 shadow-md">
           ${icons.check}
           Check-in
-        </button>
-        <button id="checkoutBtn" class="h-11 sm:h-12 bg-white border-2 border-navy text-navy rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
-          ${icons.arrowLeft}
-          Check-out
         </button>
       </div>
       <button id="refreshScannerBtn2" class="w-full h-11 mt-5 bg-navy text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-md">
@@ -786,10 +782,6 @@ async function handleScan(childId) {
   
   document.getElementById('checkinBtn').addEventListener('click', () => {
     recordAttendance(childId, 'checked-in');
-  });
-  
-  document.getElementById('checkoutBtn').addEventListener('click', () => {
-    recordAttendance(childId, 'checked-out');
   });
   
   document.getElementById('refreshScannerBtn2').addEventListener('click', () => {
