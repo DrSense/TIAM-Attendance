@@ -2,7 +2,7 @@ import firebaseConfig from './firebase-config.js';
 
 // Initialize Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -22,58 +22,111 @@ const icons = {
 
 // Database
 const DB = {
-  children: [
-    { id: 'QR001', name: 'Sochon', age: 8, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR002', name: 'Wiranranliu', age: 8, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR003', name: 'G. Joyce Keziya', age: 8, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR004', name: 'Cabrilina', age: 9, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR005', name: 'Sushma L. S', age: 9, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR006', name: 'Sarika L. S', age: 11, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR007', name: 'Thrisha Adhikari', age: 11, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR008', name: 'Rithu Menon', age: 12, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR009', name: 'Jacintha S P', age: 15, sex: 'Female', home: 'Home of Hope' },
-    { id: 'QR010', name: 'Ngashaipam', age: 8, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR011', name: 'Mohit', age: 7, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR012', name: 'Shreyas HH', age: 9, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR013', name: 'Manish HH', age: 9, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR014', name: 'Tonshon', age: 11, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR015', name: 'Themson', age: 12, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR016', name: 'Kushal', age: 12, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR017', name: 'Ramsempam', age: 14, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR018', name: 'Harish HH', age: 13, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR019', name: 'Abhishek HH', age: 14, sex: 'Male', home: 'Home of Hope' },
-    { id: 'QR020', name: 'Vijayalakshmi', age: 8, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR021', name: 'Methra', age: 9, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR022', name: 'Kaira Kayal', age: 10, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR023', name: 'Rashmitha', age: 11, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR024', name: 'Mahima RH', age: 11, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR025', name: 'Mercy RH', age: 12, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR026', name: 'Samantha', age: 13, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR027', name: 'Kanishka', age: 14, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR028', name: 'Mogana', age: 15, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR029', name: 'Anita RH', age: 16, sex: 'Female', home: 'Refuge Home' },
-    { id: 'QR030', name: 'Harsha Vardhan', age: 6, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR031', name: 'Neelesh', age: 9, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR032', name: 'Charan', age: 11, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR033', name: 'Mithun', age: 11, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR034', name: 'Chandu SH', age: 11, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR035', name: 'Isack', age: 12, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR036', name: 'Shrishail', age: 13, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR037', name: 'Yogesh SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR038', name: 'Ajay SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR039', name: 'Madan SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR040', name: 'Yashwanth', age: 13, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR041', name: 'Nandhan T.', age: 14, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR042', name: 'Delwin Immanuel J.', age: 14, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR043', name: 'Gilpson', age: 14, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR044', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR045', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR046', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR047', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR048', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR049', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
-    { id: 'QR050', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' }
-  ],
+  children: [],
+  initialized: false,
+  
+  async init() {
+    if (this.initialized) return;
+    
+    // Load children from Firebase
+    await this.loadChildren();
+    
+    // If no children in Firebase, save the pre-loaded 50 kids
+    if (this.children.length === 0) {
+      console.log('No children in Firebase, saving pre-loaded 50 kids...');
+      await this.savePreloadedChildren();
+    }
+    
+    this.initialized = true;
+  },
+  
+  async loadChildren() {
+    try {
+      const snapshot = await getDocs(collection(db, 'children'));
+      this.children = snapshot.docs.map(doc => ({ ...doc.data() }));
+      console.log(`Loaded ${this.children.length} children from Firebase`);
+    } catch (error) {
+      console.error('Error loading children:', error);
+      this.children = [];
+    }
+  },
+  
+  async savePreloadedChildren() {
+    const preloadedKids = [
+      { id: 'QR001', name: 'Sochon', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR002', name: 'Wiranranliu', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR003', name: 'G. Joyce Keziya', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR004', name: 'Cabrilina', age: 9, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR005', name: 'Sushma L. S', age: 9, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR006', name: 'Sarika L. S', age: 11, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR007', name: 'Thrisha Adhikari', age: 11, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR008', name: 'Rithu Menon', age: 12, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR009', name: 'Jacintha S P', age: 15, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR010', name: 'Ngashaipam', age: 8, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR011', name: 'Mohit', age: 7, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR012', name: 'Shreyas HH', age: 9, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR013', name: 'Manish HH', age: 9, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR014', name: 'Tonshon', age: 11, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR015', name: 'Themson', age: 12, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR016', name: 'Kushal', age: 12, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR017', name: 'Ramsempam', age: 14, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR018', name: 'Harish HH', age: 13, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR019', name: 'Abhishek HH', age: 14, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR020', name: 'Vijayalakshmi', age: 8, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR021', name: 'Methra', age: 9, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR022', name: 'Kaira Kayal', age: 10, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR023', name: 'Rashmitha', age: 11, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR024', name: 'Mahima RH', age: 11, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR025', name: 'Mercy RH', age: 12, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR026', name: 'Samantha', age: 13, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR027', name: 'Kanishka', age: 14, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR028', name: 'Mogana', age: 15, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR029', name: 'Anita RH', age: 16, sex: 'Female', home: 'Refuge Home' },
+      { id: 'QR030', name: 'Harsha Vardhan', age: 6, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR031', name: 'Neelesh', age: 9, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR032', name: 'Charan', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR033', name: 'Mithun', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR034', name: 'Chandu SH', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR035', name: 'Isack', age: 12, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR036', name: 'Shrishail', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR037', name: 'Yogesh SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR038', name: 'Ajay SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR039', name: 'Madan SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR040', name: 'Yashwanth', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR041', name: 'Nandhan T.', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR042', name: 'Delwin Immanuel J.', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR043', name: 'Gilpson', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR044', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR045', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR046', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR047', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR048', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR049', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR050', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' }
+    ];
+    
+    try {
+      for (const child of preloadedKids) {
+        await setDoc(doc(db, 'children', child.id), child);
+      }
+      this.children = preloadedKids;
+      console.log('Saved 50 pre-loaded children to Firebase');
+    } catch (error) {
+      console.error('Error saving pre-loaded children:', error);
+    }
+  },
+  
+  async addChild(child) {
+    try {
+      await setDoc(doc(db, 'children', child.id), child);
+      this.children.push(child);
+      console.log(`Saved child ${child.id} to Firebase`);
+      return true;
+    } catch (error) {
+      console.error('Error saving child:', error);
+      return false;
+    }
+  },
   
   getChild(id) {
     return this.children.find(c => c.id === id);
@@ -437,8 +490,19 @@ async function handleScan(childId) {
         return;
       }
       
-      // Add to local database
-      DB.children.push({ id: childId, name, age: parseInt(age), sex, home });
+      // Add to Firebase and local database
+      const childData = { id: childId, name, age: parseInt(age), sex, home };
+      const saved = await DB.addChild(childData);
+      
+      if (!saved) {
+        messageArea.innerHTML = `
+          <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-in">
+            <p class="font-semibold text-red-800">Failed to save child to database</p>
+          </div>
+        `;
+        setTimeout(() => messageArea.innerHTML = '', 3000);
+        return;
+      }
       
       // Record attendance
       await recordAttendance(childId, 'checked-in');
@@ -817,6 +881,7 @@ router.register('/scan', renderScanner);
 router.register('/dashboard', renderDashboard);
 
 // Initialize app
+await DB.init();
 router.init();
 
 // Register service worker
