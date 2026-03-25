@@ -33,8 +33,8 @@ const DB = {
     await this.loadChildren();
     
     // Only save preloaded children if database is empty or incomplete
-    if (this.children.length < 50) {
-      console.log(`Found ${this.children.length} children, expected 50. Adding missing children...`);
+    if (this.children.length < 52) {
+      console.log(`Found ${this.children.length} children, expected 52. Adding missing children...`);
       await this.savePreloadedChildren();
       await this.loadChildren();
     } else {
@@ -86,27 +86,29 @@ const DB = {
       { id: 'QR027', name: 'Kanishka', age: 14, sex: 'Female', home: 'Refuge Home' },
       { id: 'QR028', name: 'Mogana', age: 15, sex: 'Female', home: 'Refuge Home' },
       { id: 'QR029', name: 'Anita RH', age: 16, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR030', name: 'Harsha Vardhan', age: 6, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR031', name: 'Neelesh', age: 9, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR032', name: 'Charan', age: 11, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR033', name: 'Mithun', age: 11, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR034', name: 'Chandu SH', age: 11, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR035', name: 'Isack', age: 12, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR036', name: 'Shrishail', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR037', name: 'Yogesh SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR038', name: 'Ajay SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR039', name: 'Madan SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR040', name: 'Yashwanth', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR041', name: 'Nandhan T.', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR042', name: 'Delwin Immanuel J.', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR043', name: 'Gilpson', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR044', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR045', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR046', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR047', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR048', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR049', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR050', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' }
+      { id: 'QR030', name: 'Ziva', age: 7, sex: 'Unknown', home: 'TIAM Kidz' },
+      { id: 'QR031', name: 'Zohara', age: 5, sex: 'Unknown', home: 'TIAM Kidz' },
+      { id: 'QR032', name: 'Zeshawn', age: 10, sex: 'Unknown', home: 'TIAM Kidz' },
+      { id: 'QR033', name: 'Sai Ram', age: 7, sex: 'Male', home: 'Marcy' },
+      { id: 'QR034', name: 'Abhishek', age: 6, sex: 'Male', home: 'Marcy' },
+      { id: 'QR035', name: 'Nikhil', age: 9, sex: 'Male', home: 'Marcy' },
+      { id: 'QR036', name: 'Kiran', age: 11, sex: 'Male', home: 'Marcy' },
+      { id: 'QR037', name: 'Abdul Kaleefa', age: 11, sex: 'Male', home: 'Marcy' },
+      { id: 'QR038', name: 'Sathya Dev', age: 11, sex: 'Male', home: 'Marcy' },
+      { id: 'QR039', name: 'Prajwal', age: 11, sex: 'Male', home: 'Marcy' },
+      { id: 'QR040', name: 'Rohit', age: 11, sex: 'Male', home: 'Marcy' },
+      { id: 'QR041', name: 'Keerthika R.', age: 7, sex: 'Female', home: 'Marcy' },
+      { id: 'QR042', name: 'Keerthana K.', age: 8, sex: 'Female', home: 'Marcy' },
+      { id: 'QR043', name: 'Keerthika D.', age: 8, sex: 'Female', home: 'Marcy' },
+      { id: 'QR044', name: 'Keerthana D.', age: 9, sex: 'Female', home: 'Marcy' },
+      { id: 'QR045', name: 'Shrushti', age: 9, sex: 'Female', home: 'Marcy' },
+      { id: 'QR046', name: 'Saranya', age: 10, sex: 'Female', home: 'Marcy' },
+      { id: 'QR047', name: 'Nandini V.', age: 9, sex: 'Female', home: 'Marcy' },
+      { id: 'QR048', name: 'Nageshwari V.', age: 10, sex: 'Female', home: 'Marcy' },
+      { id: 'QR049', name: 'Nandini R.', age: 12, sex: 'Female', home: 'Marcy' },
+      { id: 'QR050', name: 'Chandrakala', age: 11, sex: 'Female', home: 'Marcy' },
+      { id: 'QR051', name: 'Kavya', age: 14, sex: 'Female', home: 'Marcy' },
+      { id: 'QR052', name: 'Vidya', age: 20, sex: 'Female', home: 'Marcy' }
     ];
     
     try {
