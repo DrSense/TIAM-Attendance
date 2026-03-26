@@ -4,3 +4,7 @@ node_modules/
 .env
 dist/
 .cache/
+
+# Python scripts and temporary files
+*.py
+children_data.json
