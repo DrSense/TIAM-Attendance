@@ -79,8 +79,12 @@
     }
     .qr-card h3 {
       color: #0B1D3A;
-      font-size: 20px;
+      font-size: 18px;
       margin-bottom: 8px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .qr-card .id {
       color: #C8A23A;
@@ -90,7 +94,7 @@
     }
     .qr-card .home {
       color: #666;
-      font-size: 14px;
+      font-size: 13px;
       margin-bottom: 16px;
     }
     .qr-card canvas {
@@ -161,33 +165,23 @@
   <div class="container">
     <div class="header">
       <h1>🎯 TIAM Attendance QR Generator</h1>
-      <p>Generate printable QR code badges for all children</p>
+      <p>Generate printable QR code badges for all 102 children</p>
     </div>
     
     <div class="controls">
-      <button class="btn" onclick="generateExisting()">Show Existing Children (QR001-QR050)</button>
-      <div style="margin: 16px 0;">
-        <label style="display: block; margin-bottom: 8px; color: #0B1D3A; font-weight: 600;">Add new QR codes:</label>
-        <input type="number" id="qrCount" min="1" max="500" value="10" style="width: 120px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
-        <button class="btn" onclick="generateNew()" style="margin-left: 12px;">Add New QR Codes</button>
-      </div>
+      <button class="btn" onclick="generateAll()">Generate All 102 QR Codes</button>
       <button class="btn btn-secondary" onclick="window.print()" id="printBtn">Print All Badges</button>
     </div>
     
-    <div class="qr-grid" id="existingGrid"></div>
-    <div id="separator" style="display: none; margin: 40px 0; border-top: 3px solid #0B1D3A; position: relative;">
-      <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #F6F4EF; padding: 0 20px; color: #0B1D3A; font-weight: 600;">NEW QR CODES</div>
-    </div>
-    <div class="qr-grid" id="newGrid"></div>
+    <div class="qr-grid" id="qrGrid"></div>
     
     <div class="instructions">
       <h3>📋 Instructions</h3>
       <ul>
-        <li>Click "Show Existing Children" to display QR001-QR050 with names</li>
-        <li>Enter number of additional QR codes needed</li>
-        <li>Click "Add New QR Codes" to create blank badges (starts from QR051)</li>
-        <li>Click "Print All Badges" to print everything</li>
-        <li>Write names on new blank badges manually</li>
+        <li>Click "Generate All 102 QR Codes" to display all badges</li>
+        <li>Click "Print All Badges" to print (3 per page)</li>
+        <li>Cut out each badge and laminate if possible</li>
+        <li>Distribute to children</li>
         <li>Scan badges using the TIAM Attendance app</li>
       </ul>
     </div>
@@ -195,7 +189,7 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
-    const existingChildren = [
+    const children = [
       { id: 'QR001', name: 'Sochon', age: 8, sex: 'Female', home: 'Home of Hope' },
       { id: 'QR002', name: 'Wiranranliu', age: 8, sex: 'Female', home: 'Home of Hope' },
       { id: 'QR003', name: 'G. Joyce Keziya', age: 8, sex: 'Female', home: 'Home of Hope' },
@@ -205,235 +199,141 @@
       { id: 'QR007', name: 'Thrisha Adhikari', age: 11, sex: 'Female', home: 'Home of Hope' },
       { id: 'QR008', name: 'Rithu Menon', age: 12, sex: 'Female', home: 'Home of Hope' },
       { id: 'QR009', name: 'Jacintha S P', age: 15, sex: 'Female', home: 'Home of Hope' },
-      { id: 'QR010', name: 'Ngashaipam', age: 8, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR011', name: 'Mohit', age: 7, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR012', name: 'Shreyas HH', age: 9, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR013', name: 'Manish HH', age: 9, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR014', name: 'Tonshon', age: 11, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR015', name: 'Themson', age: 12, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR016', name: 'Kushal', age: 12, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR017', name: 'Ramsempam', age: 14, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR018', name: 'Harish HH', age: 13, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR019', name: 'Abhishek HH', age: 14, sex: 'Male', home: 'Home of Hope' },
-      { id: 'QR020', name: 'Vijayalakshmi', age: 8, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR021', name: 'Methra', age: 9, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR022', name: 'Kaira Kayal', age: 10, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR023', name: 'Rashmitha', age: 11, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR024', name: 'Mahima RH', age: 11, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR025', name: 'Mercy RH', age: 12, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR026', name: 'Samantha', age: 13, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR027', name: 'Kanishka', age: 14, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR028', name: 'Mogana', age: 15, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR029', name: 'Anita RH', age: 16, sex: 'Female', home: 'Refuge Home' },
-      { id: 'QR030', name: 'Harsha Vardhan', age: 6, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR031', name: 'Neelesh', age: 9, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR032', name: 'Charan', age: 11, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR033', name: 'Mithun', age: 11, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR034', name: 'Chandu SH', age: 11, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR035', name: 'Isack', age: 12, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR036', name: 'Shrishail', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR037', name: 'Yogesh SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR038', name: 'Ajay SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR039', name: 'Madan SH', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR040', name: 'Yashwanth', age: 13, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR041', name: 'Nandhan T.', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR042', name: 'Delwin Immanuel J.', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR044', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR045', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR046', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR047', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR048', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR049', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR050', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' }
+      { id: 'QR010', name: 'Janifer', age: 17, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR011', name: 'Meghana', age: 18, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR012', name: 'Ngashaipam', age: 8, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR013', name: 'Mohit', age: 7, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR014', name: 'Shreyas HH', age: 9, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR015', name: 'Manish HH', age: 9, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR016', name: 'Tonshon', age: 11, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR017', name: 'Themson', age: 12, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR018', name: 'Kushal', age: 12, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR019', name: 'Ramsempam', age: 14, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR020', name: 'Harish HH', age: 13, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR021', name: 'Abhishek HH', age: 14, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR022', name: 'Ziva', age: 7, sex: 'Female', home: 'TIAM Kidz' },
+      { id: 'QR023', name: 'Zohara', age: 5, sex: 'Female', home: 'TIAM Kidz' },
+      { id: 'QR024', name: 'Zeshawn', age: 10, sex: 'Male', home: 'TIAM Kidz' },
+      { id: 'QR025', name: 'Matteo Longkumer', age: 3, sex: 'Male', home: 'TIAM Kidz' },
+      { id: 'QR026', name: 'Kritika Gogoi', age: 11, sex: 'Female', home: 'TIAM Kidz' },
+      { id: 'QR027', name: 'Sai Ram', age: 7, sex: 'Male', home: 'Mercy' },
+      { id: 'QR028', name: 'Abhishek', age: 6, sex: 'Male', home: 'Mercy' },
+      { id: 'QR029', name: 'Nikhil', age: 9, sex: 'Male', home: 'Mercy' },
+      { id: 'QR030', name: 'Kiran', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR031', name: 'Abdul Kaleefa', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR032', name: 'Sathya Dev', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR033', name: 'Prajwal', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR034', name: 'Rohit', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR035', name: 'Keerthika R.', age: 7, sex: 'Female', home: 'Mercy' },
+      { id: 'QR036', name: 'Keerthana K.', age: 8, sex: 'Female', home: 'Mercy' },
+      { id: 'QR037', name: 'Keerthika D.', age: 8, sex: 'Female', home: 'Mercy' },
+      { id: 'QR038', name: 'Keerthana D.', age: 9, sex: 'Female', home: 'Mercy' },
+      { id: 'QR039', name: 'Shrushti', age: 9, sex: 'Female', home: 'Mercy' },
+      { id: 'QR040', name: 'Saranya', age: 10, sex: 'Female', home: 'Mercy' },
+      { id: 'QR041', name: 'Nandini V.', age: 9, sex: 'Female', home: 'Mercy' },
+      { id: 'QR042', name: 'Nageshwari V.', age: 10, sex: 'Female', home: 'Mercy' },
+      { id: 'QR043', name: 'Nandini R.', age: 12, sex: 'Female', home: 'Mercy' },
+      { id: 'QR044', name: 'Chandrakala', age: 11, sex: 'Female', home: 'Mercy' },
+      { id: 'QR045', name: 'Kavya', age: 14, sex: 'Female', home: 'Mercy' },
+      { id: 'QR046', name: 'Vidya', age: 20, sex: 'Female', home: 'Mercy' },
+      { id: 'QR047', name: 'Neelesh', age: 9, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR048', name: 'Charan', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR049', name: 'Chandu SH', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR050', name: 'Isack', age: 12, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR051', name: 'Shrishail', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR052', name: 'Yogesh SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR053', name: 'Ajay SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR054', name: 'Madan SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR055', name: 'Yashwanth', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR056', name: 'Nandhan T.', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR057', name: 'Delwin Immanuel J.', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR058', name: 'Gilpson', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR059', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR060', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR061', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR062', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR063', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR064', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR065', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR066', name: 'Ashwin', age: 6, sex: 'Male', home: 'Sneha Jyothi' },
+      { id: 'QR067', name: 'Akshay', age: 11, sex: 'Male', home: 'Sneha Jyothi' },
+      { id: 'QR068', name: 'Akshaya', age: 15, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR069', name: 'Revathi', age: 13, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR070', name: 'Akshaya.V', age: 13, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR071', name: 'Jaanu', age: 11, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR072', name: 'Kushi', age: 13, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR073', name: 'Nithin', age: 14, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR074', name: 'Rakshan', age: 12, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR075', name: 'Harish', age: 12, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR076', name: 'Subash', age: 11, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR077', name: 'Surendra', age: 11, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR078', name: 'Surya', age: 8, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR079', name: 'Ashwith', age: 7, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR080', name: 'Deekshanth', age: 8, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR081', name: 'Vinay', age: 7, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR082', name: 'Rabin', age: 7, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR083', name: 'Jeevanandan', age: 11, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR084', name: 'Arun', age: 11, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR085', name: 'Gokul', age: 12, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR086', name: 'Harsitha', age: 12, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR087', name: 'Saranaya', age: 15, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR088', name: 'Anushka', age: 14, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR089', name: 'Nithya', age: 10, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR090', name: 'Bhuvana', age: 10, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR091', name: 'Shwetha', age: 12, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR092', name: 'Alice', age: 6, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR093', name: 'Kayal', age: 10, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR094', name: 'Lalitha', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR095', name: 'Manisha', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR096', name: 'Meera', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR097', name: 'Mithra', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR098', name: 'Neela', age: 6, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR099', name: 'Parvathy', age: 11, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR100', name: 'Saranaya', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR101', name: 'Varsha', age: 12, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR102', name: 'Kavya', age: 13, sex: 'Female', home: 'LITTLE LADS' }
     ];
 
-    function generateExisting() {
-      const grid = document.getElementById('existingGrid');
-      grid.innerHTML = '';
+    function generateAll() {
+      const grid = document.getElementById('qrGrid');
+      grid.innerHTML = '<div class="loading">Generating 102 QR codes... Please wait...</div>';
       
-      existingChildren.forEach(child => {
-        const card = document.createElement('div');
-        card.className = 'qr-card';
+      setTimeout(() => {
+        grid.innerHTML = '';
         
-        const qrContainer = document.createElement('div');
-        qrContainer.id = `qr-${child.id}`;
-        
-        card.innerHTML = `
-          <div class="logo">
-            <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
-          </div>
-          <h3>${child.name}</h3>
-          <div class="id">${child.id}</div>
-          <div class="home">${child.home}</div>
-        `;
-        
-        card.appendChild(qrContainer);
-        grid.appendChild(card);
-        
-        new QRCode(qrContainer, {
-          text: child.id,
-          width: 200,
-          height: 200,
-          colorDark: "#0B1D3A",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
+        children.forEach(child => {
+          const card = document.createElement('div');
+          card.className = 'qr-card';
+          
+          const qrContainer = document.createElement('div');
+          qrContainer.id = `qr-${child.id}`;
+          
+          card.innerHTML = `
+            <div class="logo">
+              <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
+            </div>
+            <h3>${child.name}</h3>
+            <div class="id">${child.id}</div>
+            <div class="home">${child.home}</div>
+          `;
+          
+          card.appendChild(qrContainer);
+          grid.appendChild(card);
+          
+          new QRCode(qrContainer, {
+            text: child.id,
+            width: 200,
+            height: 200,
+            colorDark: "#0B1D3A",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
         });
-      });
+      }, 100);
     }
 
-    function generateNew() {
-      const count = parseInt(document.getElementById('qrCount').value);
-      if (!count || count < 1 || count > 500) {
-        alert('Please enter a number between 1 and 500');
-        return;
-      }
-      
-      const grid = document.getElementById('newGrid');
-      const separator = document.getElementById('separator');
-      
-      separator.style.display = 'block';
-      
-      for (let i = 1; i <= count; i++) {
-        const qrNumber = 50 + i;
-        const id = `QR${String(qrNumber).padStart(3, '0')}`;
-        
-        const card = document.createElement('div');
-        card.className = 'qr-card';
-        
-        const qrContainer = document.createElement('div');
-        qrContainer.id = `qr-${id}`;
-        
-        card.innerHTML = `
-          <div class="logo">
-            <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
-          </div>
-          <h3 style="min-height: 28px; border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-bottom: 12px;">_________________</h3>
-          <div class="id">${id}</div>
-          <div class="home" style="min-height: 20px; border-bottom: 1px solid #ddd; margin-top: 8px;">_________________</div>
-        `;
-        
-        card.appendChild(qrContainer);
-        grid.appendChild(card);
-        
-        new QRCode(qrContainer, {
-          text: id,
-          width: 200,
-          height: 200,
-          colorDark: "#0B1D3A",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      }
-    }
-
-    // Auto-generate existing children on page load
-    window.addEventListener('load', generateExisting);
-  </script>
-</body>
-</html>id: 'QR044', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR045', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR046', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR047', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR048', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR049', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
-      { id: 'QR050', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' }
-    ];
-
-    function generateExisting() {
-      const grid = document.getElementById('existingGrid');
-      grid.innerHTML = '';
-      
-      existingChildren.forEach(child => {
-        const card = document.createElement('div');
-        card.className = 'qr-card';
-        
-        const qrContainer = document.createElement('div');
-        qrContainer.id = `qr-${child.id}`;
-        
-        card.innerHTML = `
-          <div class="logo">
-            <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
-          </div>
-          <h3>${child.name}</h3>
-          <div class="id">${child.id}</div>
-          <div class="home">${child.home}</div>
-        `;
-        
-        card.appendChild(qrContainer);
-        grid.appendChild(card);
-        
-        new QRCode(qrContainer, {
-          text: child.id,
-          width: 200,
-          height: 200,
-          colorDark: "#0B1D3A",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      });
-    }
-
-    function generateNew() {
-      const count = parseInt(document.getElementById('qrCount').value);
-      if (!count || count < 1 || count > 500) {
-        alert('Please enter a number between 1 and 500');
-        return;
-      }
-      
-      const grid = document.getElementById('newGrid');
-      const separator = document.getElementById('separator');
-      
-      separator.style.display = 'block';
-      
-      for (let i = 1; i <= count; i++) {
-        const qrNumber = 50 + i;
-        const id = `QR${String(qrNumber).padStart(3, '0')}`;
-        
-        const card = document.createElement('div');
-        card.className = 'qr-card';
-        
-        const qrContainer = document.createElement('div');
-        qrContainer.id = `qr-${id}`;
-        
-        card.innerHTML = `
-          <div class="logo">
-            <img src="Logo.png" alt="TIAM" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.parentElement.style.display='none'">
-          </div>
-          <h3 style="min-height: 28px; border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-bottom: 12px;">_________________</h3>
-          <div class="id">${id}</div>
-          <div class="home" style="min-height: 20px; border-bottom: 1px solid #ddd; margin-top: 8px;">_________________</div>
-        `;
-        
-        card.appendChild(qrContainer);
-        grid.appendChild(card);
-        
-        new QRCode(qrContainer, {
-          text: id,
-          width: 200,
-          height: 200,
-          colorDark: "#0B1D3A",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      }
-    }
-
-    // Auto-generate existing children on page load
-    window.addEventListener('load', generateExisting); Add click handler to inspect individual QR codes
-      allCards.forEach(card => {
-        card.addEventListener('click', function() {
-          const id = this.querySelector('.id').textContent.trim();
-          console.log('\n=== CLICKED CARD ===');
-          console.log('Card ID:', id);
-          console.log('Card HTML:', this.innerHTML.substring(0, 200) + '...');
-          console.log('QR Code encodes:', id);
-        });
-      });
-      console.log('\nClick any card to inspect its data');
-    }
-    
-    console.log('generateAll function defined');
-    console.log('Ready to generate QR codes');
+    // Auto-generate on page load
+    window.addEventListener('load', generateAll);
   </script>
 </body>
 </html>
