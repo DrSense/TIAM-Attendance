@@ -117,11 +117,24 @@
     
     <div class="warning">
       <h3>⚠️ Warning</h3>
-      <p>This will DELETE all children from Firebase and reload with the new 102 children list. Attendance records will NOT be affected.</p>
+      <p>Choose what to reset:</p>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        <li><strong>Children Only:</strong> Deletes all children and reloads 102 fresh children (attendance records kept)</li>
+        <li><strong>Attendance Only:</strong> Deletes all attendance records (children data kept)</li>
+        <li><strong>Both:</strong> Complete reset - deletes everything and reloads 102 children</li>
+      </ul>
     </div>
     
-    <button class="btn btn-danger" id="clearBtn" onclick="clearAndReload()">
-      Clear Database & Reload 102 Children
+    <button class="btn btn-danger" id="clearChildrenBtn" onclick="clearChildren()">
+      Reset Children Only (Reload 102)
+    </button>
+    
+    <button class="btn btn-danger" id="clearAttendanceBtn" onclick="clearAttendance()">
+      Reset Attendance Records Only
+    </button>
+    
+    <button class="btn btn-danger" id="clearBothBtn" onclick="clearBoth()" style="background: #8b0000;">
+      Reset Both (Complete Reset)
     </button>
     
     <button class="btn" onclick="window.location.href='index.html'">
@@ -253,13 +266,13 @@
       status.scrollTop = status.scrollHeight;
     }
     
-    window.clearAndReload = async function() {
-      const btn = document.getElementById('clearBtn');
+    window.clearChildren = async function() {
+      const btn = document.getElementById('clearChildrenBtn');
       btn.disabled = true;
       btn.textContent = 'Processing...';
       
       try {
-        log('Starting database clear and reload...', 'info');
+        log('Starting children database reset...', 'info');
         
         // Step 1: Get all existing children
         log('Step 1: Fetching existing children from Firebase...', 'info');
@@ -296,9 +309,141 @@
         log(`✓ Added all ${added} new children`, 'success');
         
         log('', 'info');
-        log('✅ DATABASE RESET COMPLETE!', 'success');
+        log('✅ CHILDREN DATABASE RESET COMPLETE!', 'success');
         log('All 102 children have been loaded successfully', 'success');
         log('You can now close this page and use the app', 'success');
+        
+        btn.textContent = '✓ Complete - Return to App';
+        btn.className = 'btn';
+        btn.disabled = false;
+        btn.onclick = () => window.location.href = 'index.html';
+        
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+        btn.textContent = 'Error - Try Again';
+        btn.disabled = false;
+      }
+    };
+    
+    window.clearAttendance = async function() {
+      const btn = document.getElementById('clearAttendanceBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      
+      try {
+        log('Starting attendance records reset...', 'info');
+        
+        // Get all attendance records
+        log('Step 1: Fetching attendance records from Firebase...', 'info');
+        const snapshot = await getDocs(collection(db, 'attendance'));
+        const existingCount = snapshot.size;
+        log(`Found ${existingCount} attendance records`, 'info');
+        
+        // Delete all attendance records
+        if (existingCount > 0) {
+          log('Step 2: Deleting attendance records...', 'info');
+          let deleted = 0;
+          for (const docSnapshot of snapshot.docs) {
+            await deleteDoc(doc(db, 'attendance', docSnapshot.id));
+            deleted++;
+            if (deleted % 10 === 0) {
+              log(`Deleted ${deleted}/${existingCount} records...`, 'info');
+            }
+          }
+          log(`✓ Deleted all ${deleted} attendance records`, 'success');
+        } else {
+          log('No attendance records to delete', 'info');
+        }
+        
+        log('', 'info');
+        log('✅ ATTENDANCE RESET COMPLETE!', 'success');
+        log('All attendance records have been deleted', 'success');
+        log('Children data is unchanged', 'success');
+        
+        btn.textContent = '✓ Complete - Return to App';
+        btn.className = 'btn';
+        btn.disabled = false;
+        btn.onclick = () => window.location.href = 'index.html';
+        
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+        btn.textContent = 'Error - Try Again';
+        btn.disabled = false;
+      }
+    };
+    
+    window.clearBoth = async function() {
+      const btn = document.getElementById('clearBothBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      
+      try {
+        log('Starting COMPLETE database reset...', 'info');
+        log('This will reset both children and attendance', 'info');
+        log('', 'info');
+        
+        // Step 1: Clear attendance
+        log('PART 1: ATTENDANCE RECORDS', 'info');
+        log('Fetching attendance records...', 'info');
+        const attendanceSnapshot = await getDocs(collection(db, 'attendance'));
+        const attendanceCount = attendanceSnapshot.size;
+        log(`Found ${attendanceCount} attendance records`, 'info');
+        
+        if (attendanceCount > 0) {
+          log('Deleting attendance records...', 'info');
+          let deleted = 0;
+          for (const docSnapshot of attendanceSnapshot.docs) {
+            await deleteDoc(doc(db, 'attendance', docSnapshot.id));
+            deleted++;
+            if (deleted % 10 === 0) {
+              log(`Deleted ${deleted}/${attendanceCount} records...`, 'info');
+            }
+          }
+          log(`✓ Deleted all ${deleted} attendance records`, 'success');
+        } else {
+          log('No attendance records to delete', 'info');
+        }
+        
+        log('', 'info');
+        
+        // Step 2: Clear and reload children
+        log('PART 2: CHILDREN DATA', 'info');
+        log('Fetching existing children...', 'info');
+        const childrenSnapshot = await getDocs(collection(db, 'children'));
+        const childrenCount = childrenSnapshot.size;
+        log(`Found ${childrenCount} existing children`, 'info');
+        
+        if (childrenCount > 0) {
+          log('Deleting existing children...', 'info');
+          let deleted = 0;
+          for (const docSnapshot of childrenSnapshot.docs) {
+            await deleteDoc(doc(db, 'children', docSnapshot.id));
+            deleted++;
+            if (deleted % 10 === 0) {
+              log(`Deleted ${deleted}/${childrenCount} children...`, 'info');
+            }
+          }
+          log(`✓ Deleted all ${deleted} existing children`, 'success');
+        } else {
+          log('No existing children to delete', 'info');
+        }
+        
+        log('Adding new 102 children...', 'info');
+        let added = 0;
+        for (const child of children) {
+          await setDoc(doc(db, 'children', child.id), child);
+          added++;
+          if (added % 10 === 0) {
+            log(`Added ${added}/102 children...`, 'info');
+          }
+        }
+        log(`✓ Added all ${added} new children`, 'success');
+        
+        log('', 'info');
+        log('✅ COMPLETE DATABASE RESET FINISHED!', 'success');
+        log('All attendance records deleted', 'success');
+        log('All 102 children loaded fresh', 'success');
+        log('Database is now clean and ready to use', 'success');
         
         btn.textContent = '✓ Complete - Return to App';
         btn.className = 'btn';
