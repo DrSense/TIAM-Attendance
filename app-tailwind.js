@@ -420,6 +420,9 @@ const OfflineQueue = {
 
 // Home Screen
 function renderHome() {
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  
   app_element.innerHTML = `
     <div class="min-h-screen flex items-center justify-center p-4">
       <div class="w-full max-w-md">
@@ -430,7 +433,8 @@ function renderHome() {
         </div>
         
         <h1 class="text-4xl font-bold text-center text-navy mb-2">TIAM Attendance</h1>
-        <p class="text-xl text-center text-gray-600 mb-12">VBS 2026</p>
+        <p class="text-xl text-center text-gray-600 mb-2">VBS 2026</p>
+        <p class="text-sm text-center text-gray-500 mb-12">${dateStr}</p>
         
         <div class="space-y-4">
           <button id="startScanBtn" class="w-full h-14 bg-gold text-navy rounded-xl font-semibold text-lg flex items-center justify-center gap-3 hover:bg-opacity-90 transition-all shadow-lg active:scale-95">
@@ -465,6 +469,9 @@ let lastScannedId = null;
 let html5QrCode = null;
 
 function renderScanner() {
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  
   app_element.innerHTML = `
     <div class="min-h-screen bg-warm-bg">
       <div class="bg-navy text-white px-3 py-3 flex items-center sticky top-0 z-50 shadow-lg">
@@ -473,7 +480,7 @@ function renderScanner() {
           <span class="font-semibold text-sm sm:text-base">Back</span>
         </button>
         <div class="flex-1 text-center px-2">
-          <div class="text-xs text-gray-300 mb-1">Home > Scanner</div>
+          <div class="text-xs text-gray-300 mb-1">${dateStr}</div>
           <h1 class="text-base sm:text-xl font-semibold truncate">Scanner</h1>
         </div>
         <button id="homeBtn" class="flex items-center gap-1 hover:opacity-80 transition-opacity flex-shrink-0">
@@ -923,6 +930,14 @@ async function recordAttendance(childId, status) {
 
 // Dashboard Screen
 async function renderDashboard() {
+  const attendance = await DB.getAttendance();
+  const uniqueDates = getUniqueDates(attendance);
+  const dateOptions = uniqueDates.map((dateStr, index) => {
+    const date = new Date(dateStr);
+    const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `<option value="${dateStr}">${formatted}</option>`;
+  }).join('');
+  
   app_element.innerHTML = `
     <div class="min-h-screen bg-warm-bg">
       <div class="bg-navy text-white px-3 py-3 flex items-center sticky top-0 z-50 shadow-lg">
@@ -949,10 +964,8 @@ async function renderDashboard() {
         </div>
         
         <select id="filterDropdown" class="w-full h-12 px-4 rounded-xl border-2 border-gray-200 focus:border-gold focus:outline-none mb-4 bg-white">
-          <option value="all">All</option>
-          <option value="day1">Day 1</option>
-          <option value="day2">Day 2</option>
-          <option value="day3">Day 3</option>
+          <option value="all">All Dates</option>
+          ${dateOptions}
         </select>
         
         <div id="tableContainer" class="mb-4">
@@ -975,7 +988,6 @@ async function renderDashboard() {
     router.navigate('/');
   });
   
-  const attendance = await DB.getAttendance();
   const tableContainer = document.getElementById('tableContainer');
   if (tableContainer) {
     tableContainer.innerHTML = renderTable(attendance);
@@ -1094,17 +1106,27 @@ function renderTable(records) {
   `;
 }
 
+function getUniqueDates(records) {
+  const dates = new Set();
+  records.forEach(r => {
+    const date = new Date(r.time);
+    date.setHours(0, 0, 0, 0);
+    dates.add(date.toISOString());
+  });
+  return Array.from(dates).sort((a, b) => new Date(a) - new Date(b));
+}
+
 function filterTable(allRecords) {
   const searchTerm = document.getElementById('searchBar').value.toLowerCase();
   const filter = document.getElementById('filterDropdown').value;
   let records = [...allRecords];
   
-  if (filter === 'day1' || filter === 'day2' || filter === 'day3') {
-    const dayNum = parseInt(filter.replace('day', ''));
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() - (3 - dayNum));
-    const targetDateStr = targetDate.toDateString();
-    records = records.filter(r => new Date(r.time).toDateString() === targetDateStr);
+  if (filter !== 'all') {
+    records = records.filter(r => {
+      const recordDate = new Date(r.time);
+      recordDate.setHours(0, 0, 0, 0);
+      return recordDate.toISOString() === filter;
+    });
   }
   
   if (searchTerm) {
@@ -1123,17 +1145,34 @@ function filterTable(allRecords) {
 function exportCSV(records) {
   if (records.length === 0) return;
   
+  // Get unique dates and create day mapping
+  const uniqueDates = getUniqueDates(records);
+  const dayMapping = {};
+  uniqueDates.forEach((dateStr, index) => {
+    dayMapping[dateStr] = `Day ${index + 1}`;
+  });
+  
   const csv = [
-    ['Name', 'ID', 'Age', 'Sex', 'Home', 'Status', 'Time'],
-    ...records.map(r => [
-      r.name,
-      r.id,
-      r.age || 'N/A',
-      r.sex || 'N/A',
-      r.home,
-      r.status,
-      new Date(r.time).toLocaleString()
-    ])
+    ['Name', 'ID', 'Age', 'Sex', 'Home', 'Status', 'Date', 'Time', 'Event Day'],
+    ...records.map(r => {
+      const recordDateTime = new Date(r.time);
+      const recordDate = new Date(r.time);
+      recordDate.setHours(0, 0, 0, 0);
+      const dateKey = recordDate.toISOString();
+      const eventDay = dayMapping[dateKey] || 'N/A';
+      
+      return [
+        r.name,
+        r.id,
+        r.age || 'N/A',
+        r.sex || 'N/A',
+        r.home,
+        r.status,
+        recordDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        recordDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        eventDay
+      ];
+    })
   ].map(row => row.join(',')).join('\n');
   
   const blob = new Blob([csv], { type: 'text/csv' });
