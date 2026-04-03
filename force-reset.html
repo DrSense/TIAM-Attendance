@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Force Database Reset - TIAM Attendance</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #F6F4EF;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 700px;
+      width: 100%;
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: #0B1D3A;
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+    .alert {
+      background: #FFF3CD;
+      border-left: 4px solid #FF9800;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .alert h3 {
+      color: #856404;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    .alert p {
+      color: #856404;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .alert ul {
+      color: #856404;
+      font-size: 14px;
+      margin-left: 20px;
+    }
+    .btn {
+      width: 100%;
+      background: #C8A23A;
+      color: #0B1D3A;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    .btn:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .status {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-family: monospace;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+      display: none;
+    }
+    .status.active {
+      display: block;
+    }
+    .status div {
+      padding: 4px 0;
+    }
+    .success {
+      color: #28a745;
+      font-weight: bold;
+    }
+    .error {
+      color: #dc3545;
+      font-weight: bold;
+    }
+    .info {
+      color: #0B1D3A;
+    }
+    .warning {
+      color: #FF9800;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔧 Force Database Reset</h1>
+      <p>Manual database reset with Firebase Console instructions</p>
+    </div>
+    
+    <div class="alert">
+      <h3>⚠️ Ad Blocker Detected</h3>
+      <p>Your browser extension is blocking Firebase requests. You have 2 options:</p>
+      <ul>
+        <li><strong>Option 1:</strong> Disable ad blocker and use automatic reset below</li>
+        <li><strong>Option 2:</strong> Follow manual instructions to reset via Firebase Console</li>
+      </ul>
+    </div>
+    
+    <h3 style="margin-bottom: 12px; color: #0B1D3A;">Option 1: Automatic Reset (Disable Ad Blocker First)</h3>
+    
+    <button class="btn btn-danger" id="autoResetBtn" onclick="autoReset()">
+      🔄 Automatic Reset (Try Again)
+    </button>
+    
+    <h3 style="margin: 24px 0 12px; color: #0B1D3A;">Option 2: Manual Reset via Firebase Console</h3>
+    
+    <button class="btn" onclick="showManualInstructions()">
+      📖 Show Manual Instructions
+    </button>
+    
+    <div id="manualInstructions" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+      <h3 style="color: #0B1D3A; margin-bottom: 16px;">Manual Reset Steps:</h3>
+      <ol style="line-height: 2; color: #444;">
+        <li>Go to <a href="https://console.firebase.google.com/" target="_blank" style="color: #C8A23A; font-weight: 600;">Firebase Console</a></li>
+        <li>Select your project: <strong>tiam-attendance</strong></li>
+        <li>Click <strong>Firestore Database</strong> in the left menu</li>
+        <li>Click on <strong>children</strong> collection</li>
+        <li>Select all documents (click checkbox at top)</li>
+        <li>Click <strong>Delete</strong> button (trash icon)</li>
+        <li>Confirm deletion</li>
+        <li>Return to this page and click <strong>"Reload 102 Children"</strong> below</li>
+      </ol>
+      
+      <button class="btn" style="margin-top: 20px;" onclick="reloadChildren()">
+        ✅ Reload 102 Children (After Manual Delete)
+      </button>
+    </div>
+    
+    <button class="btn" onclick="window.location.href='index.html'" style="margin-top: 20px; background: white; border: 2px solid #0B1D3A; color: #0B1D3A;">
+      Cancel - Return to App
+    </button>
+    
+    <div class="status" id="status"></div>
+  </div>
+  
+  <script type="module">
+    import firebaseConfig from './firebase-config.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, getDocs, deleteDoc, doc, setDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    const children = [
+      { id: 'QR001', name: 'Sochon', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR002', name: 'Wiranranliu', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR003', name: 'G. Joyce Keziya', age: 8, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR004', name: 'Cabrilina', age: 9, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR005', name: 'Sushma L. S', age: 9, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR006', name: 'Sarika L. S', age: 11, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR007', name: 'Thrisha Adhikari', age: 11, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR008', name: 'Rithu Menon', age: 12, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR009', name: 'Jacintha S P', age: 15, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR010', name: 'Janifer', age: 17, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR011', name: 'Meghana', age: 18, sex: 'Female', home: 'Home of Hope' },
+      { id: 'QR012', name: 'Ngashaipam', age: 8, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR013', name: 'Mohit', age: 7, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR014', name: 'Shreyas HH', age: 9, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR015', name: 'Manish HH', age: 9, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR016', name: 'Tonshon', age: 11, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR017', name: 'Themson', age: 12, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR018', name: 'Kushal', age: 12, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR019', name: 'Ramsempam', age: 14, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR020', name: 'Harish HH', age: 13, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR021', name: 'Abhishek HH', age: 14, sex: 'Male', home: 'Home of Hope' },
+      { id: 'QR022', name: 'Ziva', age: 7, sex: 'Female', home: 'TIAM Kidz' },
+      { id: 'QR023', name: 'Zohara', age: 5, sex: 'Female', home: 'TIAM Kidz' },
+      { id: 'QR024', name: 'Zeshawn', age: 10, sex: 'Male', home: 'TIAM Kidz' },
+      { id: 'QR025', name: 'Matteo Longkumer', age: 3, sex: 'Male', home: 'TIAM Kidz' },
+      { id: 'QR026', name: 'Kritika Gogoi', age: 11, sex: 'Female', home: 'TIAM Kidz' },
+      { id: 'QR027', name: 'Sai Ram', age: 7, sex: 'Male', home: 'Mercy' },
+      { id: 'QR028', name: 'Abhishek', age: 6, sex: 'Male', home: 'Mercy' },
+      { id: 'QR029', name: 'Nikhil', age: 9, sex: 'Male', home: 'Mercy' },
+      { id: 'QR030', name: 'Kiran', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR031', name: 'Abdul Kaleefa', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR032', name: 'Sathya Dev', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR033', name: 'Prajwal', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR034', name: 'Rohit', age: 11, sex: 'Male', home: 'Mercy' },
+      { id: 'QR035', name: 'Keerthika R.', age: 7, sex: 'Female', home: 'Mercy' },
+      { id: 'QR036', name: 'Keerthana K.', age: 8, sex: 'Female', home: 'Mercy' },
+      { id: 'QR037', name: 'Keerthika D.', age: 8, sex: 'Female', home: 'Mercy' },
+      { id: 'QR038', name: 'Keerthana D.', age: 9, sex: 'Female', home: 'Mercy' },
+      { id: 'QR039', name: 'Shrushti', age: 9, sex: 'Female', home: 'Mercy' },
+      { id: 'QR040', name: 'Saranya', age: 10, sex: 'Female', home: 'Mercy' },
+      { id: 'QR041', name: 'Nandini V.', age: 9, sex: 'Female', home: 'Mercy' },
+      { id: 'QR042', name: 'Nageshwari V.', age: 10, sex: 'Female', home: 'Mercy' },
+      { id: 'QR043', name: 'Nandini R.', age: 12, sex: 'Female', home: 'Mercy' },
+      { id: 'QR044', name: 'Chandrakala', age: 11, sex: 'Female', home: 'Mercy' },
+      { id: 'QR045', name: 'Kavya', age: 14, sex: 'Female', home: 'Mercy' },
+      { id: 'QR046', name: 'Vidya', age: 20, sex: 'Female', home: 'Mercy' },
+      { id: 'QR047', name: 'Neelesh', age: 9, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR048', name: 'Charan', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR049', name: 'Chandu SH', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR050', name: 'Isack', age: 12, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR051', name: 'Shrishail', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR052', name: 'Yogesh SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR053', name: 'Ajay SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR054', name: 'Madan SH', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR055', name: 'Yashwanth', age: 13, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR056', name: 'Nandhan T.', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR057', name: 'Delwin Immanuel J.', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR058', name: 'Gilpson', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR059', name: 'Harshith SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR060', name: 'Tharun SH', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR061', name: 'Vishnuvardan', age: 15, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR062', name: 'Likith SH', age: 16, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR063', name: 'Vamshi', age: 17, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR064', name: 'Gayle', age: 14, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR065', name: 'De-veliers', age: 11, sex: 'Male', home: 'Shalom Home' },
+      { id: 'QR066', name: 'Ashwin', age: 6, sex: 'Male', home: 'Sneha Jyothi' },
+      { id: 'QR067', name: 'Akshay', age: 11, sex: 'Male', home: 'Sneha Jyothi' },
+      { id: 'QR068', name: 'Akshaya', age: 15, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR069', name: 'Revathi', age: 13, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR070', name: 'Akshaya.V', age: 13, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR071', name: 'Jaanu', age: 11, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR072', name: 'Kushi', age: 13, sex: 'Female', home: 'Sneha Jyothi' },
+      { id: 'QR073', name: 'Nithin', age: 14, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR074', name: 'Rakshan', age: 12, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR075', name: 'Harish', age: 12, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR076', name: 'Subash', age: 11, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR077', name: 'Surendra', age: 11, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR078', name: 'Surya', age: 8, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR079', name: 'Ashwith', age: 7, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR080', name: 'Deekshanth', age: 8, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR081', name: 'Vinay', age: 7, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR082', name: 'Rabin', age: 7, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR083', name: 'Jeevanandan', age: 11, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR084', name: 'Arun', age: 11, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR085', name: 'Gokul', age: 12, sex: 'Male', home: 'LITTLE LADS' },
+      { id: 'QR086', name: 'Harsitha', age: 12, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR087', name: 'Saranaya', age: 15, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR088', name: 'Anushka', age: 14, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR089', name: 'Nithya', age: 10, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR090', name: 'Bhuvana', age: 10, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR091', name: 'Shwetha', age: 12, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR092', name: 'Alice', age: 6, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR093', name: 'Kayal', age: 10, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR094', name: 'Lalitha', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR095', name: 'Manisha', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR096', name: 'Meera', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR097', name: 'Mithra', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR098', name: 'Neela', age: 6, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR099', name: 'Parvathy', age: 11, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR100', name: 'Saranaya', age: 7, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR101', name: 'Varsha', age: 12, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR102', name: 'Kavya', age: 13, sex: 'Female', home: 'LITTLE LADS' }
+    ];
+    
+    function log(message, type = 'info') {
+      const status = document.getElementById('status');
+      status.classList.add('active');
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      status.appendChild(div);
+      status.scrollTop = status.scrollHeight;
+    }
+    
+    window.showManualInstructions = function() {
+      document.getElementById('manualInstructions').style.display = 'block';
+    };
+    
+    window.reloadChildren = async function() {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
+      
+      try {
+        log('Starting to load 102 children...', 'info');
+        
+        // Use batch writes for better performance
+        let added = 0;
+        const batchSize = 500; // Firestore batch limit
+        
+        for (let i = 0; i < children.length; i += batchSize) {
+          const batch = writeBatch(db);
+          const batchChildren = children.slice(i, i + batchSize);
+          
+          for (const child of batchChildren) {
+            const docRef = doc(db, 'children', child.id);
+            batch.set(docRef, child);
+            added++;
+          }
+          
+          await batch.commit();
+          log(`Added ${added}/${children.length} children...`, 'info');
+        }
+        
+        log('✅ SUCCESS! All 102 children loaded', 'success');
+        log('You can now return to the app and scan QR codes', 'success');
+        
+        btn.textContent = '✓ Complete - Return to App';
+        btn.onclick = () => window.location.href = 'index.html';
+        btn.disabled = false;
+        
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+        btn.textContent = 'Error - Try Again';
+        btn.disabled = false;
+      }
+    };
+    
+    window.autoReset = async function() {
+      const btn = document.getElementById('autoResetBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      
+      try {
+        log('Attempting automatic reset...', 'info');
+        log('Step 1: Fetching existing children...', 'info');
+        
+        const snapshot = await getDocs(collection(db, 'children'));
+        const existingCount = snapshot.size;
+        log(`Found ${existingCount} existing children`, 'info');
+        
+        if (existingCount > 0) {
+          log('Step 2: Deleting existing children...', 'info');
+          
+          // Use batch deletes
+          const batches = [];
+          let batch = writeBatch(db);
+          let count = 0;
+          
+          for (const docSnapshot of snapshot.docs) {
+            batch.delete(doc(db, 'children', docSnapshot.id));
+            count++;
+            
+            if (count % 500 === 0) {
+              batches.push(batch.commit());
+              batch = writeBatch(db);
+              log(`Queued ${count} deletions...`, 'info');
+            }
+          }
+          
+          if (count % 500 !== 0) {
+            batches.push(batch.commit());
+          }
+          
+          await Promise.all(batches);
+          log(`✓ Deleted all ${existingCount} children`, 'success');
+        }
+        
+        log('Step 3: Adding new 102 children...', 'info');
+        
+        // Add new children in batches
+        let added = 0;
+        for (let i = 0; i < children.length; i += 500) {
+          const batch = writeBatch(db);
+          const batchChildren = children.slice(i, i + 500);
+          
+          for (const child of batchChildren) {
+            batch.set(doc(db, 'children', child.id), child);
+            added++;
+          }
+          
+          await batch.commit();
+          log(`Added ${added}/102 children...`, 'info');
+        }
+        
+        log('', 'info');
+        log('✅ RESET COMPLETE!', 'success');
+        log('All 102 children loaded successfully', 'success');
+        log('QR022 should now show: Ziva from TIAM Kidz', 'success');
+        
+        btn.textContent = '✓ Complete - Return to App';
+        btn.className = 'btn';
+        btn.disabled = false;
+        btn.onclick = () => window.location.href = 'index.html';
+        
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+        log('⚠️ Automatic reset failed - use Manual Instructions instead', 'warning');
+        btn.textContent = 'Failed - Use Manual Instructions';
+        btn.disabled = false;
+        showManualInstructions();
+      }
+    };
+  </script>
+</body>
+</html>
