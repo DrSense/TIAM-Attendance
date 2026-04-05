@@ -33,8 +33,8 @@ const DB = {
     await this.loadChildren();
     
     // Only save preloaded children if database is empty or incomplete
-    if (this.children.length < 102) {
-      console.log(`Found ${this.children.length} children, expected 102. Adding missing children...`);
+    if (this.children.length < 103) {
+      console.log(`Found ${this.children.length} children, expected 103. Adding missing children...`);
       await this.savePreloadedChildren();
       await this.loadChildren();
     } else {
@@ -158,7 +158,8 @@ const DB = {
       { id: 'QR099', name: 'Parvathy', age: 11, sex: 'Female', home: 'LITTLE LADS' },
       { id: 'QR100', name: 'Saranaya', age: 7, sex: 'Female', home: 'LITTLE LADS' },
       { id: 'QR101', name: 'Varsha', age: 12, sex: 'Female', home: 'LITTLE LADS' },
-      { id: 'QR102', name: 'Kavya', age: 13, sex: 'Female', home: 'LITTLE LADS' }
+      { id: 'QR102', name: 'Kavya', age: 13, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR103', name: 'Adrian Benedict', age: 11, sex: 'Male', home: 'TIAM Kidz' }
     ];
     
     try {

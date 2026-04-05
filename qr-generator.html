@@ -173,14 +173,14 @@
   <div class="container">
     <div class="header">
       <h1>🎯 TIAM Attendance QR Generator</h1>
-      <p>Generate printable QR code badges for all 102 children</p>
+      <p>Generate printable QR code badges for all 103 children</p>
     </div>
     
     <div class="controls">
-      <button class="btn" onclick="generateAll()">Generate All 102 QR Codes</button>
+      <button class="btn" onclick="generateAll()">Generate All 103 QR Codes</button>
       <div style="margin: 16px 0;">
         <label style="display: block; margin-bottom: 8px; color: #0B1D3A; font-weight: 600;">Generate Blank QR Codes (for new children):</label>
-        <input type="number" id="startNumber" min="103" max="999" value="103" placeholder="Start from" style="width: 100px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; margin-right: 8px;">
+        <input type="number" id="startNumber" min="104" max="999" value="104" placeholder="Start from" style="width: 100px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; margin-right: 8px;">
         <input type="number" id="blankCount" min="1" max="50" value="5" placeholder="How many" style="width: 100px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; margin-right: 8px;">
         <button class="btn" onclick="generateBlank()" style="margin-left: 12px;">Generate Blank QR Codes</button>
       </div>
@@ -196,16 +196,16 @@
     <div class="instructions">
       <h3>📋 Instructions</h3>
       <ol>
-        <li><strong>For existing 102 children:</strong> Click "Generate All 102 QR Codes" to display all badges with names</li>
-        <li><strong>For new children:</strong> Enter start number (e.g., 103) and how many blank QR codes you need (e.g., 5)</li>
+        <li><strong>For existing 103 children:</strong> Click "Generate All 103 QR Codes" to display all badges with names</li>
+        <li><strong>For new children:</strong> Enter start number (e.g., 104) and how many blank QR codes you need (e.g., 5)</li>
         <li>Click "Generate Blank QR Codes" to create virgin badges</li>
         <li>Click "Print All Badges" to print everything together</li>
         <li>Write child's name and home manually on blank badges</li>
         <li>When scanned, the app will prompt you to register the new child</li>
       </ol>
       <ul>
-        <li>✓ Blank QR codes start from QR103 onwards</li>
-        <li>✓ You can generate QR103-QR999 (up to 897 additional children)</li>
+        <li>✓ Blank QR codes start from QR104 onwards</li>
+        <li>✓ You can generate QR104-QR999 (up to 896 additional children)</li>
         <li>✓ Laminate badges for durability</li>
       </ul>
     </div>
@@ -315,12 +315,13 @@
       { id: 'QR099', name: 'Parvathy', age: 11, sex: 'Female', home: 'LITTLE LADS' },
       { id: 'QR100', name: 'Saranaya', age: 7, sex: 'Female', home: 'LITTLE LADS' },
       { id: 'QR101', name: 'Varsha', age: 12, sex: 'Female', home: 'LITTLE LADS' },
-      { id: 'QR102', name: 'Kavya', age: 13, sex: 'Female', home: 'LITTLE LADS' }
+      { id: 'QR102', name: 'Kavya', age: 13, sex: 'Female', home: 'LITTLE LADS' },
+      { id: 'QR103', name: 'Adrian Benedict', age: 11, sex: 'Male', home: 'TIAM Kidz' }
     ];
 
     function generateAll() {
       const grid = document.getElementById('qrGrid');
-      grid.innerHTML = '<div class="loading">Generating 102 QR codes... Please wait...</div>';
+      grid.innerHTML = '<div class="loading">Generating 103 QR codes... Please wait...</div>';
       
       setTimeout(() => {
         grid.innerHTML = '';
@@ -360,8 +361,8 @@
       const startNum = parseInt(document.getElementById('startNumber').value);
       const count = parseInt(document.getElementById('blankCount').value);
       
-      if (!startNum || startNum < 103 || startNum > 999) {
-        alert('Start number must be between 103 and 999');
+      if (!startNum || startNum < 104 || startNum > 999) {
+        alert('Start number must be between 104 and 999');
         return;
       }
       
