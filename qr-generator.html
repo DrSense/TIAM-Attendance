@@ -65,9 +65,10 @@
     }
     .qr-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
       margin-bottom: 24px;
+      page-break-after: always;
     }
     .qr-card {
       background: white;
@@ -100,7 +101,8 @@
     .qr-card canvas {
       border: 3px solid #0B1D3A;
       border-radius: 12px;
-      margin: 16px 0;
+      margin: 16px auto;
+      display: block;
     }
     .qr-card .logo {
       width: 40px;
@@ -146,20 +148,37 @@
       body {
         background: white;
         padding: 0;
+        margin: 0;
       }
-      .header, .controls, .instructions {
+      .header, .controls, .instructions, #separator {
         display: none;
       }
+      .container {
+        max-width: 100%;
+        padding: 10mm;
+      }
       .qr-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        page-break-after: always;
+        margin-bottom: 0;
+      }
+      .qr-grid:last-child {
+        page-break-after: auto;
       }
       .qr-card {
         break-inside: avoid;
         page-break-inside: avoid;
         box-shadow: none;
         border: 1px solid #ddd;
-        padding: 16px;
+        padding: 8px;
+        height: auto;
+      }
+      .qr-card canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 150px;
+        margin: 8px auto;
       }
     }
     .loading {
@@ -187,11 +206,11 @@
       <button class="btn btn-secondary" onclick="window.print()" id="printBtn">Print All Badges</button>
     </div>
     
-    <div class="qr-grid" id="qrGrid"></div>
+    <div id="qrContainer"></div>
     <div id="separator" style="display: none; margin: 40px 0; border-top: 3px solid #0B1D3A; position: relative;">
       <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #F6F4EF; padding: 0 20px; color: #0B1D3A; font-weight: 600;">BLANK QR CODES (Write name manually)</div>
     </div>
-    <div class="qr-grid" id="blankGrid"></div>
+    <div id="blankContainer"></div>
     
     <div class="instructions">
       <h3>📋 Instructions</h3>
@@ -321,13 +340,23 @@
     ];
 
     function generateAll() {
-      const grid = document.getElementById('qrGrid');
-      grid.innerHTML = '<div class="loading">Generating 104 QR codes... Please wait...</div>';
+      const container = document.getElementById('qrContainer');
+      container.innerHTML = '<div class="loading">Generating 104 QR codes... Please wait...</div>';
       
       setTimeout(() => {
-        grid.innerHTML = '';
+        container.innerHTML = '';
         
-        children.forEach(child => {
+        // Create grids of 25 cards each
+        let currentGrid = null;
+        
+        children.forEach((child, index) => {
+          // Create new grid every 25 cards
+          if (index % 25 === 0) {
+            currentGrid = document.createElement('div');
+            currentGrid.className = 'qr-grid';
+            container.appendChild(currentGrid);
+          }
+          
           const card = document.createElement('div');
           card.className = 'qr-card';
           
@@ -344,7 +373,7 @@
           `;
           
           card.appendChild(qrContainer);
-          grid.appendChild(card);
+          currentGrid.appendChild(card);
           
           new QRCode(qrContainer, {
             text: child.id,
@@ -372,13 +401,23 @@
         return;
       }
       
-      const grid = document.getElementById('blankGrid');
+      const container = document.getElementById('blankContainer');
       const separator = document.getElementById('separator');
       
       separator.style.display = 'block';
-      grid.innerHTML = '';
+      container.innerHTML = '';
+      
+      // Create grids of 25 cards each
+      let currentGrid = null;
       
       for (let i = 0; i < count; i++) {
+        // Create new grid every 25 cards
+        if (i % 25 === 0) {
+          currentGrid = document.createElement('div');
+          currentGrid.className = 'qr-grid';
+          container.appendChild(currentGrid);
+        }
+        
         const qrNumber = startNum + i;
         const id = `QR${String(qrNumber).padStart(3, '0')}`;
         
@@ -398,7 +437,7 @@
         `;
         
         card.appendChild(qrContainer);
-        grid.appendChild(card);
+        currentGrid.appendChild(card);
         
         new QRCode(qrContainer, {
           text: id,
